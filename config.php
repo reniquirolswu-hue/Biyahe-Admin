@@ -2,11 +2,18 @@
 // config.php
 header('Content-Type: application/json');
 
-$host = "localhost";      // or your server IP if pgAdmin is remote
-$port = "5432";
-$dbname = "Biyahe";    // your database name
-$user = "postgres";       // your pgAdmin username
-$password = "root"; // your pgAdmin password
+require_once __DIR__ . '/vendor/autoload.php';
+
+// Load environment variables
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+// Fetch variables safely from $_ENV
+$host     = $_ENV['DB_HOST'];
+$port     = $_ENV['DB_PORT'];
+$dbname   = $_ENV['DB_NAME'];
+$user     = $_ENV['DB_USER'];
+$password = $_ENV['DB_PASS'];
 
 try {
     $conn = new PDO("pgsql:host=$host;port=$port;dbname=$dbname", $user, $password);
