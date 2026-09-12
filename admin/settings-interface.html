@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIYAHE — Interface</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark-sm">🚌</div>
+      <div>
+        <p class="brand-name-sm">BIYAHE</p>
+        <span class="brand-sub">Transit Management</span>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
+      <a href="analytics.html" class="side-link"><span class="side-icon">📊</span>Analytics</a>
+      <a href="routes.html" class="side-link"><span class="side-icon">🛣️</span>Routes</a>
+      <a href="settings.html" class="side-link is-active"><span class="side-icon">⚙️</span>Settings</a>
+    </nav>
+    <a href="login.html" class="side-logout">← Logout</a>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-welcome">
+        <span class="lead">Welcome,</span>
+        <strong>Administrator</strong>
+      </div>
+      <span class="region-badge">⭐ Cebu Network</span>
+      <div class="topbar-search">
+        🔍 <input type="text" placeholder="Search..." />
+      </div>
+      <button class="icon-btn" onclick="showToast('🎨 Interface settings updated!')">🔔</button>
+      <a href="settings.html" class="admin-chip">
+        <div>
+          <p class="admin-name">Admin</p>
+          <span class="admin-role">ADMIN</span>
+        </div>
+        <div class="avatar-circle">🧑</div>
+      </a>
+    </header>
+
+    <main class="dash-content">
+      <h1 style="font-size:24px; margin-bottom:4px;">Interface Settings</h1>
+      <p style="color:var(--text-secondary); margin-bottom:20px;">Customize your application appearance.</p>
+
+      <div class="settings-cols">
+        <div>
+          <h3 class="settings-section-title">Appearance</h3>
+          <div class="pref-row">
+            <div class="pref-text">
+              <p class="t">Dark Mode</p>
+              <p class="d">Switch to dark theme.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-text">
+              <p class="t">Compact Mode</p>
+              <p class="d">Reduce spacing and padding.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" onchange="showToast('📐 Compact mode ' + (this.checked ? 'enabled' : 'disabled'))" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="pref-row" style="display:block; border-bottom:none;">
+            <div class="pref-text" style="margin-bottom:8px;"><p class="t">Accent Color</p></div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+              <label class="radio-card" style="border-color:#8b6b4f; background:#f9f4ef;">
+                <input type="radio" name="accent" checked onchange="showToast('🎨 Accent set to Brown')" /> Brown
+              </label>
+              <label class="radio-card" onchange="showToast('🎨 Accent set to Blue')">
+                <input type="radio" name="accent" /> Blue
+              </label>
+              <label class="radio-card" onchange="showToast('🎨 Accent set to Green')">
+                <input type="radio" name="accent" /> Green
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="settings-section-title">Notifications</h3>
+          <div class="pref-row">
+            <div class="pref-text">
+              <p class="t">Push Notifications</p>
+              <p class="d">Receive alerts for route updates.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" checked onchange="showToast('🔔 Push notifications ' + (this.checked ? 'enabled' : 'disabled'))" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-text">
+              <p class="t">Email Alerts</p>
+              <p class="d">Get daily summary reports.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" checked onchange="showToast('📧 Email alerts ' + (this.checked ? 'enabled' : 'disabled'))" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="pref-row" style="border-bottom:none;">
+            <div class="pref-text">
+              <p class="t">Sound Effects</p>
+              <p class="d">Enable interface sounds.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" onchange="showToast('🔊 Sound effects ' + (this.checked ? 'enabled' : 'disabled'))" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  showToast(isDark ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
+}
+
+function showToast(message) {
+  const container = document.getElementById('toastContainer') || (function() {
+    const div = document.createElement('div');
+    div.id = 'toastContainer';
+    div.className = 'toast-container';
+    document.body.appendChild(div);
+    return div;
+  })();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  toast.textContent = message;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+</script>
+
+</body>
+</html>

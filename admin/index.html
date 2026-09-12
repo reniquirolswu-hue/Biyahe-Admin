@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIYAHE — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="center-shell">
+  <div class="pill"><span class="dot"></span> Official Transit Gateway</div>
+
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-mark">🚌</div>
+      <div class="login-title">BIYAHE <span class="badge-ops">OPS</span></div>
+      <p class="sub">Admin Portal Login</p>
+    </div>
+
+    <form class="login-form" id="loginForm" onsubmit="return handleLogin(event)">
+      <div id="errorMsg" class="error-msg">⚠️ Invalid username or password. Please try again.</div>
+      <div id="successMsg" class="success-msg">✅ Login successful! Redirecting...</div>
+
+      <div class="field">
+        <label for="username">Username or Admin ID</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="username" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password <a class="link" href="forgot-password.html">Forgot?</a></label>
+        <div class="input-wrap">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required />
+        </div>
+      </div>
+
+      <div class="login-row-between">
+        <label class="remember"><input type="checkbox" id="remember" /> Remember me</label>
+      </div>
+
+      <button type="submit" class="btn-primary" id="loginBtn">
+        <span>Login</span>
+        <div class="loading-spinner"></div>
+      </button>
+    </form>
+
+    <p class="form-foot">Don't have an account? <a href="signup.html">Sign up</a></p>
+  </div>
+
+  <div class="trust-strip">
+    <span class="trust-line">🔒 Authorized Personnel Only</span>
+  </div>
+</div>
+
+<script>
+function handleLogin(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const errorMsg = document.getElementById('errorMsg');
+  const successMsg = document.getElementById('successMsg');
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('loginBtn');
+
+  errorMsg.classList.remove('show');
+  successMsg.classList.remove('show');
+
+  form.classList.add('submitting');
+  btn.disabled = true;
+
+  fetch('../admin_login.php', {
+    method: 'POST',
+    credentials: 'include', // sends/receives the PHP session cookie
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        successMsg.classList.add('show');
+
+        if (document.getElementById('remember').checked) {
+          localStorage.setItem('biyahe_user', username); // remembers username only, never the password
+        } else {
+          localStorage.removeItem('biyahe_user');
+        }
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1200);
+      } else {
+        errorMsg.textContent = '⚠️ ' + (result.message || 'Invalid username or password.');
+        errorMsg.classList.add('show');
+        form.classList.remove('submitting');
+        btn.disabled = false;
+      }
+    })
+    .catch(() => {
+      errorMsg.textContent = '⚠️ Something went wrong. Please try again.';
+      errorMsg.classList.add('show');
+      form.classList.remove('submitting');
+      btn.disabled = false;
+    });
+
+  return false;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const remembered = localStorage.getItem('biyahe_user');
+  if (remembered) {
+    document.getElementById('username').value = remembered;
+    document.getElementById('remember').checked = true;
+  }
+});
+</script>
+
+</body>
+</html>

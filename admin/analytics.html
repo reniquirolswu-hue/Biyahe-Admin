@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIYAHE — Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark-sm">🚌</div>
+      <div>
+        <p class="brand-name-sm">BIYAHE</p>
+        <span class="brand-sub">Transit Management</span>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
+      <a href="analytics.html" class="side-link is-active"><span class="side-icon">📊</span>Analytics</a>
+      <a href="routes.html" class="side-link"><span class="side-icon">🛣️</span>Routes</a>
+      <a href="settings.html" class="side-link"><span class="side-icon">⚙️</span>Settings</a>
+    </nav>
+    <a href="login.html" class="side-logout">← Logout</a>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-welcome">
+        <span class="lead">Welcome,</span>
+        <strong>Administrator</strong>
+      </div>
+    
+      <div class="topbar-search">
+         <input type="text" placeholder="Search..." />
+      </div>
+      <button class="icon-btn" onclick="showToast('📊 Analytics data updated!')">🔔</button>
+      <a href="settings.html" class="admin-chip">
+        <div>
+          <p class="admin-name">Admin</p>
+          <span class="admin-role">ADMIN</span>
+        </div>
+        <div class="avatar-circle">🧑</div>
+      </a>
+    </header>
+
+    <main class="dash-content">
+      <h1 style="font-size:24px; margin-bottom:4px;">System Analytics</h1>
+      <p style="color:var(--text-secondary); margin-bottom:20px;">Real-time fleet performance insights.</p>
+
+      <section class="stat-row">
+        <div class="stat-card fade-in delay-1">
+          <p class="stat-label">Active Operators</p>
+          <p class="stat-value">0</p>
+          <p class="stat-note">↑ 0% from last week</p>
+        </div>
+        <div class="stat-card fade-in delay-2">
+          <p class="stat-label">Fleet Health</p>
+          <p class="stat-value">0%</p>
+          <p class="stat-note">↑ +2% from last week</p>
+        </div>
+        <div class="stat-card fade-in delay-3">
+          <p class="stat-label">Total Users</p>
+          <p class="stat-value">0</p>
+          <p class="stat-note">— Steady growth</p>
+        </div>
+        <div class="stat-card fade-in delay-4">
+          <p class="stat-label">Fleet Utilization</p>
+          <p class="stat-value">0%</p>
+          <p class="stat-note">of fleet active on routes</p>
+        </div>
+      </section>
+
+      <div class="dash-grid">
+        <div class="panel fade-in delay-2">
+          <div class="panel-head">
+            <h3>📈 Fleet Overview</h3>
+            <span class="tag-pill">7-Day Trend</span>
+          </div>
+          <div class="map-canvas">
+            <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#d4c5b8" stroke-width="1" stroke-dasharray="4 4">
+                <line x1="0" y1="20" x2="600" y2="20" />
+                <line x1="0" y1="70" x2="600" y2="70" />
+                <line x1="0" y1="120" x2="600" y2="120" />
+                <line x1="0" y1="170" x2="600" y2="170" />
+              </g>
+              <path d="M0,140 C60,80 100,130 150,90 S230,30 280,50 S350,140 420,110 S500,20 600,40" stroke="#8b6b4f" stroke-width="3.5" fill="none" />
+              <path d="M0,170 C60,150 100,180 150,130 S230,110 280,140 S350,190 420,160 S500,100 600,130" stroke="#c4a88a" stroke-width="2" fill="none" opacity="0.7" />
+              <g fill="#8b6b4f">
+                <circle cx="150" cy="90" r="5" />
+                <circle cx="280" cy="50" r="5" />
+                <circle cx="420" cy="110" r="5" />
+              </g>
+            </svg>
+          </div>
+          <div class="chart-x-labels">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+        </div>
+
+        <div class="panel fade-in delay-3" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+          <p style="font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.06em; margin-bottom:8px;">FLEET UTILIZATION</p>
+          <p style="font-family:var(--font-display); font-size:52px; font-weight:800; color:var(--brown-700);">0%</p>
+          <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">of total fleet vehicles are currently active on routes.</p>
+        </div>
+      </div>
+
+      <div class="panel fade-in delay-4">
+        <div class="panel-head">
+          <h3>🚐 Active Jeepney Codes</h3>
+          <span class="tag-pill">Live</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px;">
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>17B
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>17C
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#5a7a9a;"></span>17D
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#c4a88a;"></span>06B
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#c4a88a;"></span>42C
+          </span>
+          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
+            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>13C
+          </span>
+        
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+function showToast(message) {
+  const container = document.getElementById('toastContainer') || (function() {
+    const div = document.createElement('div');
+    div.id = 'toastContainer';
+    div.className = 'toast-container';
+    document.body.appendChild(div);
+    return div;
+  })();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  toast.textContent = message;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
+</script>
+
+</body>
+</html>

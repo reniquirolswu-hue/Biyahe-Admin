@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIYAHE — Sign Up</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      margin: 0;
+    }
+    /* No nav bar on this page, so the shell can use the full viewport height */
+    .center-shell {
+      min-height: 100vh;
+    }
+    .input-wrap.has-toggle input {
+      padding-right: 4px;
+    }
+    .pw-toggle {
+      background: none;
+      border: none;
+      padding: 0 14px 0 6px;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .pw-toggle:hover {
+      color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+<div class="center-shell">
+  <div class="pill"><span class="dot"></span> Official Transit Gateway</div>
+
+  <div class="login-card">
+    <div class="login-head">
+      <div class="login-mark">🚌</div>
+      <div class="login-title">BIYAHE <span class="badge-ops">OPS</span></div>
+      <p class="sub">Internal Operator Registration</p>
+    </div>
+
+    <form class="login-form" id="signupForm" onsubmit="return handleSignup(event)">
+      <div id="signupError" class="error-msg"></div>
+      <div id="signupSuccess" class="success-msg"></div>
+
+      <div class="field">
+        <label for="username">Username</label>
+        <div class="input-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="username" name="username" placeholder="Choose a username" autocomplete="username" required minlength="3" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email Address</label>
+        <div class="input-wrap">
+          <span class="icon">✉️</span>
+          <input type="email" id="email" name="email" placeholder="admin@example.com" autocomplete="email" required />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap has-toggle">
+          <span class="icon">🔒</span>
+          <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="new-password" required />
+          <button type="button" class="pw-toggle" onclick="togglePassword('password', this)">👁️</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirm Password</label>
+        <div class="input-wrap has-toggle">
+          <span class="icon">🔁</span>
+          <input type="password" id="confirm" name="confirm_password" placeholder="Re-enter password" autocomplete="new-password" required />
+          <button type="button" class="pw-toggle" onclick="togglePassword('confirm', this)">👁️</button>
+        </div>
+      </div>
+
+      <div class="check-row">
+        <input type="checkbox" id="agree" required />
+        <label for="agree">I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a></label>
+      </div>
+
+      <button type="submit" class="btn-primary" id="signupBtn">
+        <span>Sign Up</span>
+        <div class="loading-spinner"></div>
+      </button>
+    </form>
+
+    <p class="form-foot">Already have an account? <a href="index.html">Login</a></p>
+  </div>
+
+  <div class="trust-strip">
+    <span class="trust-line">🔒 Authorized Personnel Only</span>
+  </div>
+</div>
+
+<script>
+function togglePassword(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁️';
+}
+
+function handleSignup(event) {
+  event.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const confirm = document.getElementById('confirm').value;
+  const errorMsg = document.getElementById('signupError');
+  const successMsg = document.getElementById('signupSuccess');
+  const form = document.getElementById('signupForm');
+  const btn = document.getElementById('signupBtn');
+
+  errorMsg.classList.remove('show');
+  successMsg.classList.remove('show');
+
+  if (password !== confirm) {
+    errorMsg.textContent = '⚠️ Passwords do not match!';
+    errorMsg.classList.add('show');
+    return false;
+  }
+
+  form.classList.add('submitting');
+  btn.disabled = true;
+
+  fetch('../admin_signup.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: username,
+      email: email,
+      password: password,
+      confirm_password: confirm
+    })
+  })
+    .then(res => res.json())
+    .then(result => {
+      if (result.success) {
+        successMsg.textContent = '✅ ' + result.message + ' Redirecting...';
+        successMsg.classList.add('show');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+      } else {
+        errorMsg.textContent = '⚠️ ' + result.message;
+        errorMsg.classList.add('show');
+        form.classList.remove('submitting');
+        btn.disabled = false;
+      }
+    })
+    .catch(() => {
+      errorMsg.textContent = '⚠️ Something went wrong. Please try again.';
+      errorMsg.classList.add('show');
+      form.classList.remove('submitting');
+      btn.disabled = false;
+    });
+
+  return false;
+}
+</script>
+
+</body>
+</html>

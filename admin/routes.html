@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIYAHE — Routes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark-sm">🚌</div>
+      <div>
+        <p class="brand-name-sm">BIYAHE</p>
+        <span class="brand-sub">Transit Management</span>
+      </div>
+    </div>
+    <nav class="side-nav">
+      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
+      <a href="analytics.html" class="side-link"><span class="side-icon">📊</span>Analytics</a>
+      <a href="routes.html" class="side-link is-active"><span class="side-icon">🛣️</span>Routes</a>
+      <a href="settings.html" class="side-link"><span class="side-icon">⚙️</span>Settings</a>
+    </nav>
+    <a href="login.html" class="side-logout">← Logout</a>
+  </aside>
+
+  <div class="app-main">
+    <header class="topbar">
+      <div class="topbar-welcome">
+        <span class="lead">Welcome,</span>
+        <strong>Administrator</strong>
+      </div>
+    
+      <div class="topbar-search">
+        <input type="text" placeholder="Search routes..." />
+      </div>
+      <button class="icon-btn" onclick="showToast('🛣️ Route list updated!')">🔔</button>
+      <a href="settings.html" class="admin-chip">
+        <div>
+          <p class="admin-name">Admin</p>
+          <span class="admin-role">ADMIN</span>
+        </div>
+        <div class="avatar-circle">🧑</div>
+      </a>
+    </header>
+
+    <main class="dash-content">
+      <div class="route-header fade-in delay-1">
+        <div>
+          <h2>Route Management</h2>
+          <p class="sub">View and manage all transit routes.</p>
+        </div>
+        <button class="btn-solid-sm" onclick="showToast('➕ Add new route form opening...')">+ Add Route</button>
+      </div>
+
+      <div class="filter-bar fade-in delay-2">
+        <label class="filter-chip">🔍 <input type="text" placeholder="Filter by code..." /></label>
+        <label class="filter-chip">
+          <select>
+            <option>All Routes</option>
+            <option>Trunk</option>
+            <option>Feeder</option>
+            <option>Express</option>
+          </select>
+        </label>
+        <span class="filter-count">● 6 routes</span>
+      </div>
+
+      <div class="route-list fade-in delay-3">
+        <div class="route-item">
+          <div class="route-code solid">17B</div>
+          <div class="route-info">
+            <p class="route-name">Lahug – Carbon Market</p>
+            <p class="route-desc">Via Colon • 24 PUJs • Active</p>
+          </div>
+          <button class="route-edit" onclick="showToast('✏️ Editing route 17B...')">✎</button>
+        </div>
+
+        <div class="route-item">
+          <div class="route-code">04L</div>
+          <div class="route-info">
+            <p class="route-name">Lahug – SM City</p>
+            <p class="route-desc">Via Ayala • 18 PUJs • High Demand</p>
+          </div>
+          <button class="route-edit" onclick="showToast('✏️ Editing route 04L...')">✎</button>
+        </div>
+
+        <div class="route-item">
+          <div class="route-code blue">06B</div>
+          <div class="route-info">
+            <p class="route-name">Guadalupe – Carbon</p>
+            <p class="route-desc">Via Capitol • 31 PUJs • Heavy</p>
+          </div>
+          <button class="route-edit" onclick="showToast('✏️ Editing route 06B...')">✎</button>
+        </div>
+
+       
+
+        <div class="route-item">
+          <div class="route-code solid">13C</div>
+          <div class="route-info">
+            <p class="route-name">IT Park – Mandaue</p>
+            <p class="route-desc">Via Cebu Business Park • 22 PUJs • Active</p>
+          </div>
+          <button class="route-edit" onclick="showToast('✏️ Editing route 13C...')">✎</button>
+        </div>
+
+        <div class="route-item">
+          <div class="route-code">12G</div>
+          <div class="route-info">
+            <p class="route-name">Talamban – Colon</p>
+            <p class="route-desc">Via Gov. Cuenco • 16 PUJs • Active</p>
+          </div>
+          <button class="route-edit" onclick="showToast('✏️ Editing route 12G...')">✎</button>
+        </div>
+      </div>
+
+<script>
+function showToast(message) {
+  const container = document.getElementById('toastContainer') || (function() {
+    const div = document.createElement('div');
+    div.id = 'toastContainer';
+    div.className = 'toast-container';
+    document.body.appendChild(div);
+    return div;
+  })();
+  
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  toast.textContent = message;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+</script>
+
+</body>
+</html>
