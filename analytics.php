@@ -1,13 +1,5 @@
 <?php
-// analytics.php (project root, alongside routes.php, terminals.php, dashboard.php, config.php)
-//
-// Returns real analytics computed from the database for admin/analytics.html.
-// Requires an authenticated admin session (set by admin_login.php).
-//
-// Table names used here are PLURAL to match the actual schema:
-//   users, admins, terminals, routes, saved_routes, landmarks,
-//   route_landmarks, waypoints
-
+// analytics.php
 session_start();
 require_once __DIR__ . '/config.php';
 
@@ -24,9 +16,7 @@ if (empty($_SESSION['admin_id'])) {
 }
 
 try {
-    // ---------------------------------------------------------------
     // Core counts
-    // ---------------------------------------------------------------
     $totalUsers     = (int) $conn->query('SELECT COUNT(*) FROM users')->fetchColumn();
     $totalAdmins    = (int) $conn->query('SELECT COUNT(*) FROM admins')->fetchColumn();
     $totalTerminals = (int) $conn->query('SELECT COUNT(*) FROM terminals')->fetchColumn();
@@ -34,13 +24,11 @@ try {
     $totalSaved     = (int) $conn->query('SELECT COUNT(*) FROM saved_routes')->fetchColumn();
     $totalWaypoints = (int) $conn->query('SELECT COUNT(*) FROM waypoints')->fetchColumn();
 
-    // ---------------------------------------------------------------
     // Route active / inactive split
-    // ---------------------------------------------------------------
     $routeStmt = $conn->query('SELECT is_active, COUNT(*) AS cnt FROM routes GROUP BY is_active');
     $activeRoutes = 0;
     $inactiveRoutes = 0;
-    foreach ($routeStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    foreach ($routeStmt->fetchAll() as $row) {
         if ($row['is_active']) {
             $activeRoutes = (int) $row['cnt'];
         } else {
@@ -50,18 +38,14 @@ try {
     $totalRoutes = $activeRoutes + $inactiveRoutes;
     $activeRoutePct = $totalRoutes > 0 ? round(($activeRoutes / $totalRoutes) * 100, 1) : 0.0;
 
-    // ---------------------------------------------------------------
-    // Vehicle type breakdown (Modern vs Traditional)
-    // ---------------------------------------------------------------
+    // Vehicle type breakdown
     $vehicleStmt = $conn->query('SELECT vehicle_type, COUNT(*) AS cnt FROM routes GROUP BY vehicle_type');
     $vehicleBreakdown = ['Modern' => 0, 'Traditional' => 0];
-    foreach ($vehicleStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    foreach ($vehicleStmt->fetchAll() as $row) {
         $vehicleBreakdown[$row['vehicle_type']] = (int) $row['cnt'];
     }
 
-    // ---------------------------------------------------------------
-    // 7-day new-signup trend (users.date_created)
-    // ---------------------------------------------------------------
+    // 7-day new-signup trend
     $signupStmt = $conn->query("
         SELECT to_char(d.day, 'Dy') AS label,
                to_char(d.day, 'YYYY-MM-DD') AS iso,
@@ -71,11 +55,9 @@ try {
         GROUP BY d.day
         ORDER BY d.day
     ");
-    $signupRows = $signupStmt->fetchAll(PDO::FETCH_ASSOC);
+    $signupRows = $signupStmt->fetchAll();
 
-    // ---------------------------------------------------------------
-    // 7-day route-save trend (saved_routes.date_saved)
-    // ---------------------------------------------------------------
+    // 7-day route-save trend
     $savedStmt = $conn->query("
         SELECT to_char(d.day, 'Dy') AS label,
                to_char(d.day, 'YYYY-MM-DD') AS iso,
@@ -85,7 +67,7 @@ try {
         GROUP BY d.day
         ORDER BY d.day
     ");
-    $savedRows = $savedStmt->fetchAll(PDO::FETCH_ASSOC);
+    $savedRows = $savedStmt->fetchAll();
 
     $trendLabels  = array_map(fn($r) => $r['label'], $signupRows);
     $signupCounts = array_map(fn($r) => (int) $r['cnt'], $signupRows);
@@ -120,8 +102,6 @@ try {
 
 } catch (PDOException $e) {
     http_response_code(500);
-    // TEMPORARY: includes the real DB error so we can pinpoint the bad
-    // table/column. Remove $e->getMessage() from this response before
-    // shipping — it can leak schema details to anyone hitting the endpoint.
-    echo json_encode(["success" => false, "message" => "Server error while fetching analytics: " . $e->getMessage()]);
+    // Masked internal DB detail leak for security
+    echo json_encode(["success" => false, "message" => "Server error while fetching analytics data."]);
 }
