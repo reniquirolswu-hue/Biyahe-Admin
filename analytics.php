@@ -1,7 +1,7 @@
 <?php
-// api/analytics.php
+// analytics.php (project root, alongside routes.php, terminals.php, dashboard.php, config.php)
 //
-// Returns real analytics computed from the database for analytics.html.
+// Returns real analytics computed from the database for admin/analytics.html.
 // Requires an authenticated admin session (set by admin_login.php).
 //
 // Table names used here are PLURAL to match the actual schema:
@@ -81,7 +81,7 @@ try {
                to_char(d.day, 'YYYY-MM-DD') AS iso,
                COUNT(sr.route_id) AS cnt
         FROM generate_series((CURRENT_DATE - INTERVAL '6 days')::date, CURRENT_DATE::date, INTERVAL '1 day') AS d(day)
-        LEFT JOIN saved_routes sr ON DATE(sr.date_saved) = d.day
+        LEFT JOIN saved_routes sr ON DATE(sr.date_created) = d.day
         GROUP BY d.day
         ORDER BY d.day
     ");
@@ -120,5 +120,8 @@ try {
 
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Server error while fetching analytics."]);
+    // TEMPORARY: includes the real DB error so we can pinpoint the bad
+    // table/column. Remove $e->getMessage() from this response before
+    // shipping — it can leak schema details to anyone hitting the endpoint.
+    echo json_encode(["success" => false, "message" => "Server error while fetching analytics: " . $e->getMessage()]);
 }

@@ -7,15 +7,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <!-- Chart.js CDN for dynamic charts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="analytics.css" />
 </head>
 <body>
 
 <div class="app-shell">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-mark-sm"></div>
+      <div class="brand-mark-sm">🚌</div>
       <div>
         <p class="brand-name-sm">BIYAHE</p>
         <span class="brand-sub">Transit Management</span>
@@ -27,7 +26,7 @@
       <a href="routes.html" class="side-link"><span class="side-icon">🛣️</span>Routes</a>
       <a href="settings.html" class="side-link"><span class="side-icon">⚙️</span>Settings</a>
     </nav>
-    <a href="login.html" class="side-logout">← Logout</a>
+    <a href="index.html" class="side-logout">← Logout</a>
   </aside>
 
   <div class="app-main">
@@ -38,7 +37,7 @@
       </div>
 
       <div class="topbar-search">
-         <input type="text" placeholder="Search..." />
+        <input type="text" id="routeCodeSearch" placeholder="Search route code or origin..." oninput="filterRouteCodesTable()" />
       </div>
       <button class="icon-btn" onclick="loadAnalytics(true)"></button>
       <a href="settings.html" class="admin-chip">
@@ -51,78 +50,93 @@
     </header>
 
     <main class="dash-content">
-      <h1 style="font-size:24px; margin-bottom:4px;">System Analytics</h1>
-      <p style="color:var(--text-secondary); margin-bottom:20px;">Real-time fleet performance insights.</p>
-
+      <!-- Stat Cards -->
       <section class="stat-row">
         <div class="stat-card fade-in delay-1">
-          <p class="stat-label">Total Routes</p>
-          <p class="stat-value" id="stat-total-routes">—</p>
-          <p class="stat-note" id="stat-total-routes-note">Loading…</p>
+          <p class="stat-label">Active Routes</p>
+          <p class="stat-value" id="stat-active-routes">0</p>
+          <p class="stat-note" id="stat-active-note">0.0% operational</p>
         </div>
         <div class="stat-card fade-in delay-2">
           <p class="stat-label">Total Users</p>
-          <p class="stat-value" id="stat-total-users">—</p>
-          <p class="stat-note" id="stat-total-users-note">Loading…</p>
+          <p class="stat-value" id="stat-total-people">0</p>
+          <p class="stat-note" id="stat-user-note">0 commuters · 0 admins</p>
         </div>
         <div class="stat-card fade-in delay-3">
-          <p class="stat-label">Active Route Rate</p>
-          <p class="stat-value" id="stat-active-rate">—</p>
-          <p class="stat-note">of routes currently active</p>
+          <p class="stat-label">Total Saved Routes</p>
+          <p class="stat-value" id="stat-saved-routes">0</p>
+          <p class="stat-note">Commuter bookmarks</p>
         </div>
         <div class="stat-card fade-in delay-4">
-          <p class="stat-label">Total Terminals</p>
-          <p class="stat-value" id="stat-total-terminals">—</p>
-          <p class="stat-note">across the network</p>
-        </div>
-        <div class="stat-card fade-in delay-4">
-          <p class="stat-label">Total Landmarks</p>
-          <p class="stat-value" id="stat-total-landmarks">—</p>
-          <p class="stat-note">mapped and active</p>
-        </div>
-        <div class="stat-card fade-in delay-4">
-          <p class="stat-label">Saved Routes</p>
-          <p class="stat-value" id="stat-saved-routes">—</p>
-          <p class="stat-note">saved by commuters</p>
+          <p class="stat-label">GIS Waypoints</p>
+          <p class="stat-value" id="stat-waypoints">0</p>
+          <p class="stat-note" id="stat-gis-note">0 terminals · 0 landmarks</p>
         </div>
       </section>
 
-      <!-- Alert banner for inactive routes; shown by JS only when inactive_routes > 0 -->
-      <div id="alert-banner" class="alert-banner" style="display:none;">
-        <span class="alert-icon">⚠️</span>
-        <p id="alert-banner-text"></p>
-        <a href="routes.html">View route</a>
+      <!-- Trends and User Distribution Split Row -->
+      <div class="dash-grid analytics-split">
+        <!-- 7-Day Trend Section -->
+        <div class="panel fade-in delay-2">
+          <div class="panel-head">
+            <div>
+              <h3>7-Day Activity Trend</h3>
+              <p class="sub">Daily user signups and saved route bookmarks</p>
+            </div>
+            <span class="tag-pill">Past 7 Days</span>
+          </div>
+
+          <div class="chart-panel-body">
+            <div class="bar-chart-container" id="trendBarChart">
+              <!-- Dynamically populated bars -->
+            </div>
+          </div>
+
+          <div class="map-legend" style="margin-top: 16px;">
+            <span><span class="legend-dot" style="background:#ff6b00; border-radius: 50%;"></span>Signups</span>
+            <span><span class="legend-dot" style="background:#f5cb3f; border-radius: 50%;"></span>Saved Routes</span>
+          </div>
+        </div>
+
+        <!-- User Distribution Section -->
+        <div class="panel fade-in delay-3">
+          <div class="panel-head">
+            <h3>User Distribution</h3>
+            <span class="tag-pill" id="total-users-pill">0 Users</span>
+          </div>
+          <div class="user-dist-list" id="userDistributionContainer">
+            <!-- Dynamically populated user breakdown -->
+          </div>
+        </div>
       </div>
 
-      <div class="dash-grid">
-        <div class="panel panel-light fade-in delay-2">
-          <div class="panel-head">
-            <h3>📈 Weekly Trends</h3>
-            <span class="tag-pill">7-Day Trend</span>
+      <!-- Route Codes Overview Panel -->
+      <div class="panel fade-in delay-4" style="margin-top: 20px;">
+        <div class="panel-head">
+          <div>
+            <h3>🛣️ Route Codes Overview</h3>
+            <p class="sub">Active corridors and registered jeepney codes in Metro Cebu</p>
           </div>
-          <div class="map-canvas" style="position:relative; height:200px;">
-            <canvas id="trendChart"></canvas>
-          </div>
-          <div class="chart-legend">
-            <span class="legend-item"><span class="legend-swatch primary"></span>New signups</span>
-            <span class="legend-item"><span class="legend-swatch secondary"></span>Routes saved</span>
-          </div>
+          <span class="tag-pill" id="table-routes-pill">0 Registered</span>
         </div>
 
-        <!-- User Distribution Donut Chart -->
-        <div class="panel panel-light fade-in delay-4">
-          <div class="panel-head">
-            <h3>👥 Database Users</h3>
-            <span class="tag-pill tag-pill-live">Live</span>
-          </div>
-          <div style="position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; margin-top: 10px;">
-            <canvas id="userDistributionChart"></canvas>
-          </div>
-          <div class="user-legend" id="user-legend">
-            <!-- rows injected by JS -->
-          </div>
+        <div class="route-table-wrapper">
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Route Corridor</th>
+                <th>Vehicle Type</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="routesTableBody">
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted);">Loading route codes data…</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
       </div>
 
     </main>
@@ -130,12 +144,11 @@
 </div>
 
 <script>
-let userPieChart = null;
-let trendChart = null;
+let cachedRoutes = [];
 
 async function loadAnalytics(isManualRefresh) {
   try {
-    const res = await fetch('api/analytics.php', { credentials: 'include' });
+    const res = await fetch('../analytics.php', { credentials: 'include' });
 
     if (res.status === 401) {
       window.location.href = 'login.html';
@@ -145,17 +158,18 @@ async function loadAnalytics(isManualRefresh) {
     const data = await res.json();
 
     if (!data.success) {
-      showToast('⚠️ ' + (data.message || 'Failed to load analytics.'));
+      showToast('⚠️ ' + (data.message || 'Failed to load analytics data.'));
       return;
     }
 
-    renderStats(data.stats);
-    renderAlertBanner(data.stats);
-    renderUserDonut(data.user_distribution);
+    renderStats(data.stats, data.user_distribution);
+    renderUserDistribution(data.user_distribution, data.stats.total_people);
     renderTrendChart(data.trend);
 
+    fetchRouteCodes();
+
     if (isManualRefresh) {
-      showToast('📊 Analytics data updated!');
+      showToast('📊 Analytics updated!');
     }
   } catch (err) {
     console.error('Analytics fetch failed:', err);
@@ -163,146 +177,201 @@ async function loadAnalytics(isManualRefresh) {
   }
 }
 
-function renderStats(stats) {
-  document.getElementById('stat-total-routes').textContent = stats.total_routes.toLocaleString();
-  document.getElementById('stat-total-routes-note').textContent =
-    `${stats.active_routes} active · ${stats.inactive_routes} inactive`;
+async function fetchRouteCodes() {
+  try {
+    const res = await fetch('../routes.php', { credentials: 'include' });
+    const data = await res.json();
+    
+    if (data.success && Array.isArray(data.routes)) {
+      cachedRoutes = data.routes;
+      renderRouteCodesTable(cachedRoutes);
+    } else if (Array.isArray(data)) {
+      cachedRoutes = data;
+      renderRouteCodesTable(cachedRoutes);
+    } else {
+      renderRouteCodesTable([]);
+    }
+  } catch (err) {
+    console.error('Failed to fetch route codes:', err);
+    document.getElementById('routesTableBody').innerHTML = 
+      '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Could not load route codes table.</td></tr>';
+  }
+}
 
-  document.getElementById('stat-total-users').textContent = stats.total_people.toLocaleString();
-  document.getElementById('stat-total-users-note').textContent =
-    `${stats.total_users} commuters · ${stats.total_admins} admins`;
+function renderStats(stats, userDist) {
+  document.getElementById('stat-active-routes').textContent = stats.active_routes.toLocaleString();
+  document.getElementById('stat-active-note').textContent = `${stats.active_route_pct}% active (${stats.inactive_routes} inactive)`;
 
-  document.getElementById('stat-active-rate').textContent = `${stats.active_route_pct}%`;
-  document.getElementById('stat-total-terminals').textContent = stats.total_terminals.toLocaleString();
-  document.getElementById('stat-total-landmarks').textContent = stats.total_landmarks.toLocaleString();
+  document.getElementById('stat-total-people').textContent = stats.total_people.toLocaleString();
+  document.getElementById('stat-user-note').textContent = `${(userDist.commuters || 0).toLocaleString()} commuters · ${(userDist.admins || 0).toLocaleString()} admins`;
+
   document.getElementById('stat-saved-routes').textContent = stats.total_saved_routes.toLocaleString();
+
+  document.getElementById('stat-waypoints').textContent = stats.total_waypoints.toLocaleString();
+  document.getElementById('stat-gis-note').textContent = `${stats.total_terminals} terminals · ${stats.total_landmarks} landmarks`;
 }
 
-function renderAlertBanner(stats) {
-  const banner = document.getElementById('alert-banner');
-  const text = document.getElementById('alert-banner-text');
-  if (stats.inactive_routes > 0) {
-    text.textContent = `${stats.inactive_routes} route${stats.inactive_routes === 1 ? '' : 's'} currently inactive.`;
-    banner.style.display = '';
-  } else {
-    banner.style.display = 'none';
-  }
-}
+function renderUserDistribution(userDist, totalUsers) {
+  const container = document.getElementById('userDistributionContainer');
+  document.getElementById('total-users-pill').textContent = `${totalUsers.toLocaleString()} Users`;
 
-function renderUserDonut(userDistribution) {
-  const userLabels = ['Admins', 'Commuters'];
-  const userValues = [userDistribution.admins, userDistribution.commuters];
-  const userColors = ['#000000', '#ff7a1a'];
-  const userTotal = userValues.reduce((a, b) => a + b, 0) || 1;
-
-  const ctx = document.getElementById('userDistributionChart').getContext('2d');
-
-  if (userPieChart) {
-    userPieChart.data.datasets[0].data = userValues;
-    userPieChart.update();
-  } else {
-    userPieChart = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: userLabels,
-        datasets: [{
-          data: userValues,
-          backgroundColor: userColors,
-          borderColor: '#332a22',
-          borderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                let value = context.raw || 0;
-                let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0) || 1;
-                let percentage = ((value / total) * 100).toFixed(1);
-                return ` ${label}: ${value.toLocaleString()} (${percentage}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  const userLegend = document.getElementById('user-legend');
-  userLegend.innerHTML = '';
-  userLabels.forEach((label, i) => {
-    const value = userValues[i];
-    const pct = ((value / userTotal) * 100).toFixed(0);
-    const row = document.createElement('div');
-    row.className = 'user-legend-item';
-    row.innerHTML = `
-      <span class="legend-left">
-        <span class="legend-dot-lg" style="background:${userColors[i]}; ${userColors[i] === '#000000' ? 'border:1px solid #666;' : ''}"></span>
-        ${label}
-      </span>
-      <span class="legend-value">${value.toLocaleString()} (${pct}%)</span>
-    `;
-    userLegend.appendChild(row);
-  });
-}
-
-function renderTrendChart(trend) {
-  const ctx = document.getElementById('trendChart').getContext('2d');
-
-  if (trendChart) {
-    trendChart.data.labels = trend.labels;
-    trendChart.data.datasets[0].data = trend.signups;
-    trendChart.data.datasets[1].data = trend.saved_routes;
-    trendChart.update();
+  if (!totalUsers || totalUsers === 0) {
+    container.innerHTML = '<p class="sub" style="text-align:center;">No users registered.</p>';
     return;
   }
 
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: trend.labels,
-      datasets: [
-        {
-          label: 'New signups',
-          data: trend.signups,
-          borderColor: '#e0592e',
-          backgroundColor: 'rgba(224, 89, 46, 0.1)',
-          borderWidth: 3,
-          tension: 0.35,
-          pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#e0592e',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          fill: true
-        },
-        {
-          label: 'Routes saved',
-          data: trend.saved_routes,
-          borderColor: '#b4b0aa',
-          backgroundColor: 'rgba(180, 176, 170, 0.08)',
-          borderWidth: 2.5,
-          tension: 0.35,
-          pointRadius: 0,
-          fill: true
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: '#e8e8e8' }, ticks: { precision: 0 } }
-      }
-    }
+  const commuters = userDist.commuters || 0;
+  const admins = userDist.admins || 0;
+  const drivers = userDist.drivers || 0;
+
+  // Circle perimeter for r=40 is 2 * PI * 40 = ~251.327
+  const C = 251.327;
+
+  const commuterPct = commuters / totalUsers;
+  const adminPct = admins / totalUsers;
+  const driverPct = drivers / totalUsers;
+
+  const commuterDash = commuterPct * C;
+  const adminDash = adminPct * C;
+  const driverDash = driverPct * C;
+
+  const adminOffset = C - commuterDash;
+  const driverOffset = C - (commuterDash + adminDash);
+
+  container.innerHTML = `
+    <div class="pie-chart-body">
+      <div class="pie-chart-wrapper">
+        <svg class="pie-svg" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" stroke="var(--bg-soft)" stroke-width="24" fill="none" />
+          
+          <!-- Commuters Segment -->
+          <circle class="pie-segment commuters" cx="50" cy="50" r="40"
+            stroke-dasharray="${commuterDash} ${C - commuterDash}"
+            stroke-dashoffset="0" />
+
+          <!-- Admins Segment -->
+          <circle class="pie-segment admins" cx="50" cy="50" r="40"
+            stroke-dasharray="${adminDash} ${C - adminDash}"
+            stroke-dashoffset="-${commuterDash}" />
+
+          <!-- Drivers Segment -->
+          ${driverPct > 0 ? `
+          <circle class="pie-segment drivers" cx="50" cy="50" r="40"
+            stroke-dasharray="${driverDash} ${C - driverDash}"
+            stroke-dashoffset="-${commuterDash + adminDash}" />
+          ` : ''}
+        </svg>
+
+        <div class="pie-center-label">
+          <div class="pie-center-value">${totalUsers}</div>
+          <div class="pie-center-text">Total</div>
+        </div>
+      </div>
+
+      <div class="pie-legend-list">
+        <div class="pie-legend-item">
+          <div class="pie-legend-info">
+            <span class="pie-legend-dot commuters"></span>
+            <span class="pie-legend-label">Commuters</span>
+          </div>
+          <span class="pie-legend-val">${commuters} (${(commuterPct * 100).toFixed(1)}%)</span>
+        </div>
+
+        <div class="pie-legend-item">
+          <div class="pie-legend-info">
+            <span class="pie-legend-dot admins"></span>
+            <span class="pie-legend-label">Admins</span>
+          </div>
+          <span class="pie-legend-val">${admins} (${(adminPct * 100).toFixed(1)}%)</span>
+        </div>
+
+        ${drivers > 0 ? `
+        <div class="pie-legend-item">
+          <div class="pie-legend-info">
+            <span class="pie-legend-dot drivers"></span>
+            <span class="pie-legend-label">Drivers</span>
+          </div>
+          <span class="pie-legend-val">${drivers} (${(driverPct * 100).toFixed(1)}%)</span>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderTrendChart(trend) {
+  const container = document.getElementById('trendBarChart');
+  container.innerHTML = '';
+
+  const maxVal = Math.max(...trend.signups, ...trend.saved_routes, 1);
+
+  trend.labels.forEach((label, i) => {
+    const signupVal = trend.signups[i] || 0;
+    const savedVal = trend.saved_routes[i] || 0;
+
+    const signupHeight = Math.max(Math.round((signupVal / maxVal) * 100), 4);
+    const savedHeight = Math.max(Math.round((savedVal / maxVal) * 100), 4);
+
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+    group.innerHTML = `
+      <div class="bar-stack">
+        <div class="bar signups" style="height: ${signupHeight}%;" title="Signups: ${signupVal}"></div>
+        <div class="bar saved" style="height: ${savedHeight}%;" title="Saved: ${savedVal}"></div>
+      </div>
+      <span class="bar-label">${escapeHtml(label)}</span>
+    `;
+    container.appendChild(group);
   });
+}
+
+function renderRouteCodesTable(routes) {
+  const tbody = document.getElementById('routesTableBody');
+  document.getElementById('table-routes-pill').textContent = `${routes.length} Registered`;
+
+  if (!routes || routes.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No route codes found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = routes.map(r => {
+    const code = r.route_code || r.code || 'N/A';
+    const origin = r.origin_terminal_name || r.origin || 'Origin';
+    const dest = r.destination_terminal_name || r.destination || 'Destination';
+    const type = r.vehicle_type || 'Standard';
+    const isActive = r.is_active == 1 || r.is_active === true;
+
+    return `
+      <tr>
+        <td><span class="route-code-badge">${escapeHtml(code)}</span></td>
+        <td><strong>${escapeHtml(origin)}</strong> ➔ <strong>${escapeHtml(dest)}</strong></td>
+        <td>${escapeHtml(type)}</td>
+        <td>
+          <span class="status-badge ${isActive ? 'active' : 'inactive'}">
+            <span class="dot"></span>${isActive ? 'Active' : 'Inactive'}
+          </span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterRouteCodesTable() {
+  const query = document.getElementById('routeCodeSearch').value.toLowerCase();
+  const filtered = cachedRoutes.filter(r => {
+    const code = (r.route_code || r.code || '').toLowerCase();
+    const origin = (r.origin_terminal_name || r.origin || '').toLowerCase();
+    const dest = (r.destination_terminal_name || r.destination || '').toLowerCase();
+    const type = (r.vehicle_type || '').toLowerCase();
+    return code.includes(query) || origin.includes(query) || dest.includes(query) || type.includes(query);
+  });
+  renderRouteCodesTable(filtered);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
 }
 
 function showToast(message) {
