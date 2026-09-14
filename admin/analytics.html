@@ -7,13 +7,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <!-- Chart.js CDN for dynamic charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 <div class="app-shell">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-mark-sm">🚌</div>
+      <div class="brand-mark-sm"></div>
       <div>
         <p class="brand-name-sm">BIYAHE</p>
         <span class="brand-sub">Transit Management</span>
@@ -34,17 +36,17 @@
         <span class="lead">Welcome,</span>
         <strong>Administrator</strong>
       </div>
-    
+
       <div class="topbar-search">
          <input type="text" placeholder="Search..." />
       </div>
-      <button class="icon-btn" onclick="showToast('📊 Analytics data updated!')">🔔</button>
+      <button class="icon-btn" onclick="loadAnalytics(true)"></button>
       <a href="settings.html" class="admin-chip">
         <div>
           <p class="admin-name">Admin</p>
           <span class="admin-role">ADMIN</span>
         </div>
-        <div class="avatar-circle">🧑</div>
+        <div class="avatar-circle"></div>
       </a>
     </header>
 
@@ -54,94 +56,255 @@
 
       <section class="stat-row">
         <div class="stat-card fade-in delay-1">
-          <p class="stat-label">Active Operators</p>
-          <p class="stat-value">0</p>
-          <p class="stat-note">↑ 0% from last week</p>
+          <p class="stat-label">Total Routes</p>
+          <p class="stat-value" id="stat-total-routes">—</p>
+          <p class="stat-note" id="stat-total-routes-note">Loading…</p>
         </div>
         <div class="stat-card fade-in delay-2">
-          <p class="stat-label">Fleet Health</p>
-          <p class="stat-value">0%</p>
-          <p class="stat-note">↑ +2% from last week</p>
+          <p class="stat-label">Total Users</p>
+          <p class="stat-value" id="stat-total-users">—</p>
+          <p class="stat-note" id="stat-total-users-note">Loading…</p>
         </div>
         <div class="stat-card fade-in delay-3">
-          <p class="stat-label">Total Users</p>
-          <p class="stat-value">0</p>
-          <p class="stat-note">— Steady growth</p>
+          <p class="stat-label">Active Route Rate</p>
+          <p class="stat-value" id="stat-active-rate">—</p>
+          <p class="stat-note">of routes currently active</p>
         </div>
         <div class="stat-card fade-in delay-4">
-          <p class="stat-label">Fleet Utilization</p>
-          <p class="stat-value">0%</p>
-          <p class="stat-note">of fleet active on routes</p>
+          <p class="stat-label">Total Terminals</p>
+          <p class="stat-value" id="stat-total-terminals">—</p>
+          <p class="stat-note">across the network</p>
+        </div>
+        <div class="stat-card fade-in delay-4">
+          <p class="stat-label">Total Landmarks</p>
+          <p class="stat-value" id="stat-total-landmarks">—</p>
+          <p class="stat-note">mapped and active</p>
+        </div>
+        <div class="stat-card fade-in delay-4">
+          <p class="stat-label">Saved Routes</p>
+          <p class="stat-value" id="stat-saved-routes">—</p>
+          <p class="stat-note">saved by commuters</p>
         </div>
       </section>
 
+      <!-- Alert banner for inactive routes; shown by JS only when inactive_routes > 0 -->
+      <div id="alert-banner" class="alert-banner" style="display:none;">
+        <span class="alert-icon">⚠️</span>
+        <p id="alert-banner-text"></p>
+        <a href="routes.html">View route</a>
+      </div>
+
       <div class="dash-grid">
-        <div class="panel fade-in delay-2">
+        <div class="panel panel-light fade-in delay-2">
           <div class="panel-head">
-            <h3>📈 Fleet Overview</h3>
+            <h3>📈 Weekly Trends</h3>
             <span class="tag-pill">7-Day Trend</span>
           </div>
-          <div class="map-canvas">
-            <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
-              <g stroke="#d4c5b8" stroke-width="1" stroke-dasharray="4 4">
-                <line x1="0" y1="20" x2="600" y2="20" />
-                <line x1="0" y1="70" x2="600" y2="70" />
-                <line x1="0" y1="120" x2="600" y2="120" />
-                <line x1="0" y1="170" x2="600" y2="170" />
-              </g>
-              <path d="M0,140 C60,80 100,130 150,90 S230,30 280,50 S350,140 420,110 S500,20 600,40" stroke="#8b6b4f" stroke-width="3.5" fill="none" />
-              <path d="M0,170 C60,150 100,180 150,130 S230,110 280,140 S350,190 420,160 S500,100 600,130" stroke="#c4a88a" stroke-width="2" fill="none" opacity="0.7" />
-              <g fill="#8b6b4f">
-                <circle cx="150" cy="90" r="5" />
-                <circle cx="280" cy="50" r="5" />
-                <circle cx="420" cy="110" r="5" />
-              </g>
-            </svg>
+          <div class="map-canvas" style="position:relative; height:200px;">
+            <canvas id="trendChart"></canvas>
           </div>
-          <div class="chart-x-labels">
-            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-swatch primary"></span>New signups</span>
+            <span class="legend-item"><span class="legend-swatch secondary"></span>Routes saved</span>
           </div>
         </div>
 
-        <div class="panel fade-in delay-3" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
-          <p style="font-size:11px; font-weight:600; color:var(--text-muted); letter-spacing:0.06em; margin-bottom:8px;">FLEET UTILIZATION</p>
-          <p style="font-family:var(--font-display); font-size:52px; font-weight:800; color:var(--brown-700);">0%</p>
-          <p style="font-size:12px; color:var(--text-secondary); margin-top:8px;">of total fleet vehicles are currently active on routes.</p>
+        <!-- User Distribution Donut Chart -->
+        <div class="panel panel-light fade-in delay-4">
+          <div class="panel-head">
+            <h3>👥 Database Users</h3>
+            <span class="tag-pill tag-pill-live">Live</span>
+          </div>
+          <div style="position: relative; width: 100%; height: 180px; display: flex; justify-content: center; align-items: center; margin-top: 10px;">
+            <canvas id="userDistributionChart"></canvas>
+          </div>
+          <div class="user-legend" id="user-legend">
+            <!-- rows injected by JS -->
+          </div>
         </div>
+
       </div>
 
-      <div class="panel fade-in delay-4">
-        <div class="panel-head">
-          <h3>🚐 Active Jeepney Codes</h3>
-          <span class="tag-pill">Live</span>
-        </div>
-        <div style="display:flex; flex-wrap:wrap; gap:10px;">
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>17B
-          </span>
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>17C
-          </span>
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#5a7a9a;"></span>17D
-          </span>
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#c4a88a;"></span>06B
-          </span>
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#c4a88a;"></span>42C
-          </span>
-          <span style="display:inline-flex; align-items:center; gap:7px; padding:7px 14px; border-radius:999px; border:1px solid var(--brown-200); background:var(--bg-panel); font-size:13px; font-weight:600; color:var(--text-secondary);">
-            <span style="width:9px; height:9px; border-radius:50%; background:#8b6b4f;"></span>13C
-          </span>
-        
-        </div>
-      </div>
     </main>
   </div>
 </div>
 
 <script>
+let userPieChart = null;
+let trendChart = null;
+
+async function loadAnalytics(isManualRefresh) {
+  try {
+    const res = await fetch('api/analytics.php', { credentials: 'include' });
+
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.success) {
+      showToast('⚠️ ' + (data.message || 'Failed to load analytics.'));
+      return;
+    }
+
+    renderStats(data.stats);
+    renderAlertBanner(data.stats);
+    renderUserDonut(data.user_distribution);
+    renderTrendChart(data.trend);
+
+    if (isManualRefresh) {
+      showToast('📊 Analytics data updated!');
+    }
+  } catch (err) {
+    console.error('Analytics fetch failed:', err);
+    showToast('⚠️ Could not reach analytics API.');
+  }
+}
+
+function renderStats(stats) {
+  document.getElementById('stat-total-routes').textContent = stats.total_routes.toLocaleString();
+  document.getElementById('stat-total-routes-note').textContent =
+    `${stats.active_routes} active · ${stats.inactive_routes} inactive`;
+
+  document.getElementById('stat-total-users').textContent = stats.total_people.toLocaleString();
+  document.getElementById('stat-total-users-note').textContent =
+    `${stats.total_users} commuters · ${stats.total_admins} admins`;
+
+  document.getElementById('stat-active-rate').textContent = `${stats.active_route_pct}%`;
+  document.getElementById('stat-total-terminals').textContent = stats.total_terminals.toLocaleString();
+  document.getElementById('stat-total-landmarks').textContent = stats.total_landmarks.toLocaleString();
+  document.getElementById('stat-saved-routes').textContent = stats.total_saved_routes.toLocaleString();
+}
+
+function renderAlertBanner(stats) {
+  const banner = document.getElementById('alert-banner');
+  const text = document.getElementById('alert-banner-text');
+  if (stats.inactive_routes > 0) {
+    text.textContent = `${stats.inactive_routes} route${stats.inactive_routes === 1 ? '' : 's'} currently inactive.`;
+    banner.style.display = '';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function renderUserDonut(userDistribution) {
+  const userLabels = ['Admins', 'Commuters'];
+  const userValues = [userDistribution.admins, userDistribution.commuters];
+  const userColors = ['#000000', '#ff7a1a'];
+  const userTotal = userValues.reduce((a, b) => a + b, 0) || 1;
+
+  const ctx = document.getElementById('userDistributionChart').getContext('2d');
+
+  if (userPieChart) {
+    userPieChart.data.datasets[0].data = userValues;
+    userPieChart.update();
+  } else {
+    userPieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: userLabels,
+        datasets: [{
+          data: userValues,
+          backgroundColor: userColors,
+          borderColor: '#332a22',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                let value = context.raw || 0;
+                let total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0) || 1;
+                let percentage = ((value / total) * 100).toFixed(1);
+                return ` ${label}: ${value.toLocaleString()} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  const userLegend = document.getElementById('user-legend');
+  userLegend.innerHTML = '';
+  userLabels.forEach((label, i) => {
+    const value = userValues[i];
+    const pct = ((value / userTotal) * 100).toFixed(0);
+    const row = document.createElement('div');
+    row.className = 'user-legend-item';
+    row.innerHTML = `
+      <span class="legend-left">
+        <span class="legend-dot-lg" style="background:${userColors[i]}; ${userColors[i] === '#000000' ? 'border:1px solid #666;' : ''}"></span>
+        ${label}
+      </span>
+      <span class="legend-value">${value.toLocaleString()} (${pct}%)</span>
+    `;
+    userLegend.appendChild(row);
+  });
+}
+
+function renderTrendChart(trend) {
+  const ctx = document.getElementById('trendChart').getContext('2d');
+
+  if (trendChart) {
+    trendChart.data.labels = trend.labels;
+    trendChart.data.datasets[0].data = trend.signups;
+    trendChart.data.datasets[1].data = trend.saved_routes;
+    trendChart.update();
+    return;
+  }
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trend.labels,
+      datasets: [
+        {
+          label: 'New signups',
+          data: trend.signups,
+          borderColor: '#e0592e',
+          backgroundColor: 'rgba(224, 89, 46, 0.1)',
+          borderWidth: 3,
+          tension: 0.35,
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#e0592e',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          fill: true
+        },
+        {
+          label: 'Routes saved',
+          data: trend.saved_routes,
+          borderColor: '#b4b0aa',
+          backgroundColor: 'rgba(180, 176, 170, 0.08)',
+          borderWidth: 2.5,
+          tension: 0.35,
+          pointRadius: 0,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: '#e8e8e8' }, ticks: { precision: 0 } }
+      }
+    }
+  });
+}
+
 function showToast(message) {
   const container = document.getElementById('toastContainer') || (function() {
     const div = document.createElement('div');
@@ -150,12 +313,12 @@ function showToast(message) {
     document.body.appendChild(div);
     return div;
   })();
-  
+
   const toast = document.createElement('div');
   toast.className = 'toast-item';
   toast.textContent = message;
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(100px)';
@@ -163,6 +326,7 @@ function showToast(message) {
   }, 3000);
 }
 
+loadAnalytics(false);
 </script>
 
 </body>

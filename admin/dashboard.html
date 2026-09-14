@@ -7,6 +7,37 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- MapLibre GL JS — renders MapTiler vector styles -->
+  <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4/dist/maplibre-gl.js"></script>
+
+  <style>
+    /* Scoped to this page only — styles.css is left untouched.
+       .map-canvas already handles border/background/radius; svg had
+       "height:auto" but our replacement div needs an explicit height. */
+    #cebuMap {
+      width: 100%;
+      height: 380px;
+      display: block;
+    }
+    .map-key-warning {
+      display: none;
+      background: var(--brown-100);
+      border: 1px solid var(--brown-300);
+      color: var(--text-primary);
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+    }
+    .maplibregl-popup-content {
+      background: var(--bg-panel);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 13px;
+    }
+  </style>
 </head>
 <body>
 
@@ -34,11 +65,11 @@
         <span class="lead">Welcome,</span>
         <strong>Administrator</strong>
       </div>
-  
+
       <div class="topbar-search">
          <input type="text" placeholder="Search routes, jeepneys..." />
       </div>
-      <button class="icon-btn" onclick="showToast('New notifications available!')"></button>
+      <button class="icon-btn" onclick="loadDashboard(true)"></button>
       <a href="settings.html" class="admin-chip">
         <div>
           <p class="admin-name">Admin</p>
@@ -52,23 +83,23 @@
       <section class="stat-row">
         <div class="stat-card fade-in delay-1">
           <p class="stat-label">Active Routes</p>
-          <p class="stat-value">0</p>
-          <p class="stat-note">Metro Cebu corridors</p>
+          <p class="stat-value" id="stat-active-routes">0</p>
+          <p class="stat-note" id="stat-active-routes-note">Metro Cebu corridors</p>
         </div>
         <div class="stat-card fade-in delay-2">
           <p class="stat-label">Active PUJs</p>
-          <p class="stat-value">0</p>
-          <p class="stat-note">Live telemetry</p>
+          <p class="stat-value" id="stat-active-pujs">N/A</p>
+          <p class="stat-note">No vehicle telemetry table yet</p>
         </div>
         <div class="stat-card fade-in delay-3">
           <p class="stat-label">Fleet Health</p>
-          <p class="stat-value">0%</p>
-          <p class="stat-note">↑ +2% from last week</p>
+          <p class="stat-value" id="stat-fleet-health">N/A</p>
+          <p class="stat-note">No vehicle health data yet</p>
         </div>
         <div class="stat-card fade-in delay-4">
           <p class="stat-label">Total Users</p>
-          <p class="stat-value">0</p>
-          <p class="stat-note">Steady growth</p>
+          <p class="stat-value" id="stat-total-users">0</p>
+          <p class="stat-note" id="stat-total-users-note">Steady growth</p>
         </div>
       </section>
 
@@ -77,89 +108,31 @@
           <div class="panel-head">
             <div>
               <h3> Cebu Transit Map</h3>
-              <p class="sub">Live jeepney positions • Cebu City, Mandaue, Lapu-Lapu</p>
+              <p class="sub">Terminals &amp; landmarks • Cebu City, Mandaue, Lapu-Lapu</p>
             </div>
-            <span class="tag-pill">🔴 0 Active</span>
+            <span class="tag-pill" id="map-active-pill">0 Active Routes</span>
           </div>
+
+          <div id="map-key-warning" class="map-key-warning">
+            ⚠️ Add your MapTiler API key in the script (look for <code>MAPTILER_KEY</code>) to load the map tiles.
+          </div>
+
           <div class="map-canvas">
-            <svg viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg">
-              <rect width="700" height="380" fill="#f3ede8" />
-              <g stroke="#d4c5b8" stroke-width="1">
-                <line x1="0" y1="60" x2="700" y2="60" />
-                <line x1="0" y1="120" x2="700" y2="120" />
-                <line x1="0" y1="180" x2="700" y2="180" />
-                <line x1="0" y1="240" x2="700" y2="240" />
-                <line x1="0" y1="300" x2="700" y2="300" />
-                <line x1="100" y1="0" x2="100" y2="380" />
-                <line x1="220" y1="0" x2="220" y2="380" />
-                <line x1="340" y1="0" x2="340" y2="380" />
-                <line x1="460" y1="0" x2="460" y2="380" />
-                <line x1="580" y1="0" x2="580" y2="380" />
-              </g>
-              <path d="M40,80 C140,60 200,140 300,120 S460,60 640,90" stroke="#8b6b4f" stroke-width="3" fill="none" />
-              <path d="M50,320 C150,280 220,340 320,260 S480,180 650,220" stroke="#a88566" stroke-width="2.5" fill="none" />
-              <path d="M60,260 C160,230 260,300 380,250 S560,320 620,300" stroke="#c4a88a" stroke-width="2" fill="none" stroke-dasharray="6 4" />
-              <g fill="#8b6b4f">
-                <circle cx="300" cy="120" r="5" />
-                <circle cx="640" cy="90" r="4" />
-                <circle cx="40" cy="80" r="4" />
-                <circle cx="320" cy="260" r="4" />
-              </g>
-              <g fill="#6f5a49" font-family="sans-serif">
-                <text x="20" y="30" font-size="11">Banilad</text>
-                <text x="255" y="112" font-size="10" font-weight="700">IT Park</text>
-                <text x="600" y="80" font-size="10">Punta Engano</text>
-                <text x="30" y="200" font-size="10">Guadalupe</text>
-                <text x="440" y="260" font-size="10">Reclamation</text>
-                <text x="30" y="290" font-size="10">Pardo</text>
-              </g>
-            </svg>
+            <div id="cebuMap"></div>
           </div>
           <div class="map-legend">
-            <span><span class="legend-dot" style="background:#8b6b4f;"></span>Trunk Lines</span>
-            <span><span class="legend-dot" style="background:#a88566;"></span>Express</span>
-            <span><span class="legend-dot" style="background:#c4a88a;"></span>Feeder</span>
-            <span><span class="legend-dot" style="background:#8b6b4f; border-radius:50%;"></span>Active PUJ</span>
+            <span><span class="legend-dot" style="background:#3fa9f5; border-radius:50%;"></span>Terminal</span>
+            <span><span class="legend-dot" style="background:#f5cb3f; border-radius:50%;"></span>Landmark</span>
           </div>
         </div>
 
-      
-
-      <div class="panel fade-in delay-4">
-        <div class="panel-head">
-          <h3>📍 Key Transit Hubs</h3>
-          <span class="tag-pill">6 Major Corridors</span>
-        </div>
-        <div class="hub-grid">
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 01</div>
-            <h4>IT Park Terminal</h4>
-            <p class="hub-meta">High Demand • 14 Routes</p>
+        <div class="panel fade-in delay-4">
+          <div class="panel-head">
+            <h3>📍 Key Transit Hubs</h3>
+            <span class="tag-pill" id="hub-count-pill">— terminals</span>
           </div>
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 02</div>
-            <h4>Ayala Center</h4>
-            <p class="hub-meta">Moderate • 22 Routes</p>
-          </div>
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 03</div>
-            <h4>Colon Street</h4>
-            <p class="hub-meta">Congested • 28 Routes</p>
-          </div>
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 04</div>
-            <h4>SM Seaside</h4>
-            <p class="hub-meta">Flowing • 12 Routes</p>
-          </div>
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 05</div>
-            <h4>MCIA Airport</h4>
-            <p class="hub-meta">Scheduled • 8 Routes</p>
-          </div>
-          <div class="hub-card">
-            <div class="hub-tag"><span class="dot"></span>HUB 06</div>
-            <h4>Fuente Osmeña</h4>
-            <p class="hub-meta">Moderate • 19 Routes</p>
+          <div class="hub-grid" id="hub-grid">
+            <!-- hub cards injected by JS -->
           </div>
         </div>
       </div>
@@ -168,6 +141,163 @@
 </div>
 
 <script>
+// ---------------------------------------------------------------
+// MapTiler configuration
+// ---------------------------------------------------------------
+// 1. Sign up free at https://cloud.maptiler.com and grab a key from
+//    https://cloud.maptiler.com/account/keys/
+// 2. Paste it below.
+// 3. MAPTILER_STYLE can be any MapTiler style id, e.g.
+//    'streets-v2-dark', 'streets-v2', 'basic-v2-dark', 'dataviz-dark'.
+const MAPTILER_KEY = '5hqAX6ehvk13Ic2HPmia';
+const CEBU_CENTER = [123.8854, 10.3157]; // [lng, lat]
+
+let map = null;
+
+function initMap() {
+  if (!MAPTILER_KEY || MAPTILER_KEY === 'YOUR_MAPTILER_API_KEY') {
+    document.getElementById('map-key-warning').style.display = 'block';
+    return;
+  }
+
+  const styleUrl = `https://api.maptiler.com/maps/01a06643-7cd4-7150-869a-610c3182da14/style.json?key=5hqAX6ehvk13Ic2HPmia`;
+
+  map = new maplibregl.Map({
+    container: 'cebuMap',
+    style: styleUrl,
+    center: CEBU_CENTER,
+    zoom: 12,
+    attributionControl: false // removes the "i" info button
+  });
+
+  // No NavigationControl added — removes the +/- zoom buttons.
+
+  map.on('load', () => {
+    loadDashboard(false);
+  });
+}
+
+async function loadDashboard(isManualRefresh) {
+  try {
+    const res = await fetch('api/dashboard.php', { credentials: 'include' });
+
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.success) {
+      showToast('⚠️ ' + (data.message || 'Failed to load dashboard.'));
+      return;
+    }
+
+    renderStats(data.stats);
+    renderHubs(data.hubs);
+    renderMapPins(data.map);
+
+    if (isManualRefresh) {
+      showToast('📊 Dashboard data updated!');
+    }
+  } catch (err) {
+    console.error('Dashboard fetch failed:', err);
+    showToast('⚠️ Could not reach dashboard API.');
+  }
+}
+
+function renderStats(stats) {
+  document.getElementById('stat-active-routes').textContent = stats.active_routes.toLocaleString();
+  document.getElementById('stat-active-routes-note').textContent = `of ${stats.total_routes} total routes`;
+
+  document.getElementById('stat-total-users').textContent = stats.total_people.toLocaleString();
+  document.getElementById('stat-total-users-note').textContent =
+    `${stats.total_users} commuters · ${stats.total_admins} admins`;
+
+  document.getElementById('map-active-pill').textContent = `${stats.active_routes} Active Routes`;
+}
+
+function renderHubs(hubs) {
+  const grid = document.getElementById('hub-grid');
+  document.getElementById('hub-count-pill').textContent = `${hubs.length} terminals`;
+  grid.innerHTML = '';
+
+  hubs.forEach((hub, i) => {
+    const card = document.createElement('div');
+    card.className = 'hub-card';
+    card.innerHTML = `
+      <div class="hub-tag"><span class="dot"></span>HUB ${String(i + 1).padStart(2, '0')}</div>
+      <h4>${hub.name}</h4>
+      <p class="hub-meta">${hub.route_count} Route${hub.route_count === 1 ? '' : 's'}</p>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function renderMapPins(mapData) {
+  if (!map) return; // key not set yet, or map failed to init
+
+  const addOrUpdateSource = (id, geojson) => {
+    if (map.getSource(id)) {
+      map.getSource(id).setData(geojson);
+    } else {
+      map.addSource(id, { type: 'geojson', data: geojson });
+    }
+  };
+
+  addOrUpdateSource('terminals-src', mapData.terminals);
+  addOrUpdateSource('landmarks-src', mapData.landmarks);
+
+  if (!map.getLayer('landmarks-layer')) {
+    map.addLayer({
+      id: 'landmarks-layer',
+      type: 'circle',
+      source: 'landmarks-src',
+      paint: {
+        'circle-radius': 5,
+        'circle-color': '#f5cb3f',
+        'circle-stroke-width': 1.5,
+        'circle-stroke-color': '#151513'
+      }
+    });
+  }
+
+  if (!map.getLayer('terminals-layer')) {
+    map.addLayer({
+      id: 'terminals-layer',
+      type: 'circle',
+      source: 'terminals-src',
+      paint: {
+        'circle-radius': 7,
+        'circle-color': '#3fa9f5',
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#151513'
+      }
+    });
+  }
+
+  [['terminals-layer', 'Terminal'], ['landmarks-layer', 'Landmark']].forEach(([layerId, kind]) => {
+    map.on('click', layerId, (e) => {
+      const f = e.features[0];
+      new maplibregl.Popup()
+        .setLngLat(f.geometry.coordinates)
+        .setHTML(`<strong>${f.properties.name}</strong><br/>${kind}`)
+        .addTo(map);
+    });
+    map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+  });
+
+  const coords = (mapData.terminals.features || []).map(f => f.geometry.coordinates);
+  if (coords.length > 0) {
+    const bounds = coords.reduce(
+      (b, c) => b.extend(c),
+      new maplibregl.LngLatBounds(coords[0], coords[0])
+    );
+    map.fitBounds(bounds, { padding: 60, maxZoom: 14 });
+  }
+}
+
 function showToast(message) {
   const container = document.getElementById('toastContainer') || (function() {
     const div = document.createElement('div');
@@ -176,17 +306,23 @@ function showToast(message) {
     document.body.appendChild(div);
     return div;
   })();
-  
+
   const toast = document.createElement('div');
   toast.className = 'toast-item';
   toast.textContent = message;
   container.appendChild(toast);
-  
+
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(100px)';
     setTimeout(() => toast.remove(), 400);
   }, 3000);
+}
+
+initMap();
+if (!MAPTILER_KEY || MAPTILER_KEY === 'YOUR_MAPTILER_API_KEY') {
+  // Still populate stats + hub cards even without a map key
+  loadDashboard(false);
 }
 </script>
 
