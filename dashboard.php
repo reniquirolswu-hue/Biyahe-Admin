@@ -1,7 +1,7 @@
 <?php
-// api/dashboard.php
+// dashboard.php (project root, alongside routes.php, terminals.php, config.php)
 //
-// Powers dashboard.html: core stats, top terminal "hubs", and GeoJSON
+// Powers admin/dashboard.html: core stats, top terminal "hubs", and GeoJSON
 // for terminal/landmark map pins. Route lines are intentionally NOT
 // included here (not needed on the dashboard map).
 //

@@ -179,7 +179,10 @@ function initMap() {
 
 async function loadDashboard(isManualRefresh) {
   try {
-    const res = await fetch('api/dashboard.php', { credentials: 'include' });
+    // dashboard.php lives in the project root (Biyahe-Admin/), one level up
+    // from this admin/dashboard.html page — same layout as routes.php and
+    // terminals.php, which routes.html already reaches via "../".
+    const res = await fetch('../dashboard.php', { credentials: 'include' });
 
     if (res.status === 401) {
       window.location.href = 'login.html';
