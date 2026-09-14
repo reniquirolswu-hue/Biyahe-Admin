@@ -1,14 +1,16 @@
 <?php
 // admin/api/routes.php
-// GET    -> list all routes, or a single route + its waypoints via ?id=
-// POST   -> create a route AND its waypoints together
-// PUT    -> update a route AND replace its waypoints (?id= required)
-// (route table has no geometry column; the drawn line is stored as ordered waypoint rows)
+ob_start(); // Prevent PHP warnings/notices from ruining JSON output
 
 require_once __DIR__ . '/config.php';
-// config.php already sets Content-Type: application/json and gives us $conn (PDO, Postgres)
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Clear any output buffer accumulated during require_once or session_start
+ob_clean();
+header('Content-Type: application/json; charset=utf-8');
 
 if (empty($_SESSION['admin_id'])) {
     http_response_code(401);
@@ -40,12 +42,10 @@ exit();
 // ---------------------------------------------------------------------------
 
 function handleGet($conn) {
-    $id = $_GET['id'] ?? null;
+    $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
     try {
         if ($id) {
-            // Single route, including its ordered waypoints — used to populate
-            // the editor's form/map when the admin clicks a route to edit it.
             $stmt = $conn->prepare(
                 'SELECT r.route_id, r.route_code, r.vehicle_type, r.is_active,
                         r.origin_terminal_id, r.destination_terminal_id,
@@ -56,7 +56,7 @@ function handleGet($conn) {
                  WHERE r.route_id = :id'
             );
             $stmt->execute([':id' => $id]);
-            $route = $stmt->fetch(PDO::FETCH_ASSOC);
+            $route = $stmt->fetch();
 
             if (!$route) {
                 http_response_code(404);
@@ -71,13 +71,14 @@ function handleGet($conn) {
                  ORDER BY sequence_no ASC'
             );
             $wpStmt->execute([':id' => $id]);
-            $waypoints = $wpStmt->fetchAll(PDO::FETCH_ASSOC);
+            $waypoints = $wpStmt->fetchAll();
 
-            $route['route_id'] = (int) $route['route_id'];
-            $route['origin_terminal_id'] = (int) $route['origin_terminal_id'];
+            $route['route_id']                = (int) $route['route_id'];
+            $route['route_code']             = htmlspecialchars((string)($route['route_code'] ?? ''), ENT_QUOTES, 'UTF-8');
+            $route['origin_terminal_id']      = (int) $route['origin_terminal_id'];
             $route['destination_terminal_id'] = (int) $route['destination_terminal_id'];
-            $route['is_active'] = (bool) $route['is_active'];
-            $route['waypoints'] = array_map(function ($wp) {
+            $route['is_active']               = (bool) $route['is_active'];
+            $route['waypoints']               = array_map(function ($wp) {
                 return [
                     'sequence_no' => (int) $wp['sequence_no'],
                     'latitude'    => (float) $wp['latitude'],
@@ -85,13 +86,10 @@ function handleGet($conn) {
                 ];
             }, $waypoints);
 
-            http_response_code(200);
             echo json_encode($route);
             return;
         }
 
-        // Full list — used to render the Route Management list from the
-        // database instead of static markup.
         $stmt = $conn->query(
             'SELECT r.route_id, r.route_code, r.vehicle_type, r.is_active,
                     r.origin_terminal_id, r.destination_terminal_id,
@@ -101,60 +99,76 @@ function handleGet($conn) {
              JOIN terminals dt ON dt.terminal_id = r.destination_terminal_id
              ORDER BY r.route_code ASC'
         );
-        $routes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $routes = $stmt->fetchAll() ?: [];
 
-        foreach ($routes as &$r) {
-            $r['route_id'] = (int) $r['route_id'];
-            $r['origin_terminal_id'] = (int) $r['origin_terminal_id'];
-            $r['destination_terminal_id'] = (int) $r['destination_terminal_id'];
-            $r['is_active'] = (bool) $r['is_active'];
+        $cleanedRoutes = [];
+        foreach ($routes as $r) {
+            $cleanedRoutes[] = [
+                'route_id'                => (int) $r['route_id'],
+                'route_code'             => htmlspecialchars((string)($r['route_code'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                'vehicle_type'           => $r['vehicle_type'],
+                'origin_terminal_id'      => (int) $r['origin_terminal_id'],
+                'destination_terminal_id' => (int) $r['destination_terminal_id'],
+                'origin_name'             => htmlspecialchars((string)($r['origin_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                'destination_name'        => htmlspecialchars((string)($r['destination_name'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                'is_active'               => (bool) $r['is_active'],
+            ];
         }
-        unset($r);
 
-        http_response_code(200);
-        echo json_encode($routes);
+        echo json_encode($cleanedRoutes);
     } catch (PDOException $e) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Failed to fetch routes: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Failed to fetch routes.']);
     }
 }
 
-// Shared validation for POST (create) and PUT (update) — same shape of payload.
 function validateRoutePayload($input) {
     $errors = [];
-    $routeCode   = trim($input['route_code'] ?? '');
+    $routeCode   = isset($input['route_code']) ? (function_exists('sanitize_string') ? sanitize_string((string)$input['route_code']) : trim((string)$input['route_code'])) : '';
     $vehicleType = $input['vehicle_type'] ?? null;
-    $originId    = $input['origin_terminal_id'] ?? null;
-    $destId      = $input['destination_terminal_id'] ?? null;
+    $originId    = filter_var($input['origin_terminal_id'] ?? null, FILTER_VALIDATE_INT);
+    $destId      = filter_var($input['destination_terminal_id'] ?? null, FILTER_VALIDATE_INT);
     $waypoints   = $input['waypoints'] ?? [];
 
-    if ($routeCode === '')                                        $errors[] = 'route_code is required.';
-    if (!in_array($vehicleType, ['Traditional', 'Modern'], true))  $errors[] = 'vehicle_type must be "Traditional" or "Modern".';
-    if (!$originId)                                                $errors[] = 'origin_terminal_id is required.';
-    if (!$destId)                                                  $errors[] = 'destination_terminal_id is required.';
-    if ($originId && $destId && $originId == $destId)              $errors[] = 'Origin and destination terminals must differ.';
-    if (!is_array($waypoints) || count($waypoints) === 0)          $errors[] = 'waypoints must be a non-empty array.';
+    if ($routeCode === '') {
+        $errors[] = 'route_code is required.';
+    }
+    if (!in_array($vehicleType, ['Traditional', 'Modern'], true)) {
+        $errors[] = 'vehicle_type must be "Traditional" or "Modern".';
+    }
+    if (!$originId) {
+        $errors[] = 'origin_terminal_id must be a valid integer.';
+    }
+    if (!$destId) {
+        $errors[] = 'destination_terminal_id must be a valid integer.';
+    }
+    if ($originId && $destId && $originId === $destId) {
+        $errors[] = 'Origin and destination terminals must differ.';
+    }
+    if (!is_array($waypoints) || count($waypoints) === 0) {
+        $errors[] = 'waypoints must be a non-empty array.';
+    }
 
     return $errors;
 }
 
-function insertWaypoints($conn, $routeId, $waypoints) {
+function insertWaypoints($conn, $routeId, array $waypoints) {
     $waypointStmt = $conn->prepare(
         'INSERT INTO waypoints (route_id, sequence_no, latitude, longitude)
          VALUES (:route_id, :sequence_no, :latitude, :longitude)'
     );
     foreach ($waypoints as $wp) {
         $waypointStmt->execute([
-            ':route_id'    => $routeId,
-            ':sequence_no' => $wp['sequence_no'],
-            ':latitude'    => $wp['latitude'],
-            ':longitude'   => $wp['longitude'],
+            ':route_id'    => (int) $routeId,
+            ':sequence_no' => (int) ($wp['sequence_no'] ?? 0),
+            ':latitude'    => (float) ($wp['latitude'] ?? 0.0),
+            ':longitude'   => (float) ($wp['longitude'] ?? 0.0),
         ]);
     }
 }
 
 function handleCreate($conn) {
-    $input = json_decode(file_get_contents('php://input'), true);
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
     $errors = validateRoutePayload($input);
 
     if (!empty($errors)) {
@@ -163,14 +177,12 @@ function handleCreate($conn) {
         return;
     }
 
-    // created_by comes from the logged-in admin's session, never from the client —
-    // admin_login.php sets $_SESSION['admin_id'] on a successful login.
     $createdBy   = $_SESSION['admin_id'];
-    $routeCode   = trim($input['route_code']);
+    $routeCode   = function_exists('sanitize_string') ? sanitize_string((string)$input['route_code']) : trim((string)$input['route_code']);
     $vehicleType = $input['vehicle_type'];
-    $originId    = $input['origin_terminal_id'];
-    $destId      = $input['destination_terminal_id'];
-    $isActive    = array_key_exists('is_active', $input) ? (bool) $input['is_active'] : true;
+    $originId    = (int) $input['origin_terminal_id'];
+    $destId      = (int) $input['destination_terminal_id'];
+    $isActive    = isset($input['is_active']) ? filter_var($input['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true : true;
     $waypoints   = $input['waypoints'];
 
     try {
@@ -187,7 +199,7 @@ function handleCreate($conn) {
             ':dest_id'      => $destId,
             ':route_code'   => $routeCode,
             ':vehicle_type' => $vehicleType,
-            ':is_active'    => $isActive,
+            ':is_active'    => $isActive ? 'true' : 'false',
         ]);
         $routeId = $routeStmt->fetchColumn();
 
@@ -198,22 +210,24 @@ function handleCreate($conn) {
         http_response_code(201);
         echo json_encode(['success' => true, 'route_id' => (int) $routeId]);
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Failed to save route: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Failed to save route.']);
     }
 }
 
 function handleUpdate($conn) {
-    $routeId = $_GET['id'] ?? null;
+    $routeId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
     if (!$routeId) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Route id is required (?id=).']);
+        echo json_encode(['success' => false, 'message' => 'Valid route id is required (?id=).']);
         return;
     }
 
-    $input = json_decode(file_get_contents('php://input'), true);
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
     $errors = validateRoutePayload($input);
 
     if (!empty($errors)) {
@@ -222,11 +236,11 @@ function handleUpdate($conn) {
         return;
     }
 
-    $routeCode   = trim($input['route_code']);
+    $routeCode   = function_exists('sanitize_string') ? sanitize_string((string)$input['route_code']) : trim((string)$input['route_code']);
     $vehicleType = $input['vehicle_type'];
-    $originId    = $input['origin_terminal_id'];
-    $destId      = $input['destination_terminal_id'];
-    $isActive    = array_key_exists('is_active', $input) ? (bool) $input['is_active'] : true;
+    $originId    = (int) $input['origin_terminal_id'];
+    $destId      = (int) $input['destination_terminal_id'];
+    $isActive    = isset($input['is_active']) ? filter_var($input['is_active'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true : true;
     $waypoints   = $input['waypoints'];
 
     try {
@@ -247,7 +261,7 @@ function handleUpdate($conn) {
             ':vehicle_type' => $vehicleType,
             ':origin_id'    => $originId,
             ':dest_id'      => $destId,
-            ':is_active'    => $isActive,
+            ':is_active'    => $isActive ? 'true' : 'false',
             ':id'           => $routeId,
         ]);
 
@@ -258,9 +272,6 @@ function handleUpdate($conn) {
             return;
         }
 
-        // Replace waypoints wholesale — simplest way to keep the ordered
-        // sequence_no list consistent with whatever the admin re-drew, rather
-        // than trying to diff old vs. new point-by-point.
         $deleteStmt = $conn->prepare('DELETE FROM waypoints WHERE route_id = :id');
         $deleteStmt->execute([':id' => $routeId]);
 
@@ -271,8 +282,10 @@ function handleUpdate($conn) {
         http_response_code(200);
         echo json_encode(['success' => true, 'route_id' => (int) $routeId]);
     } catch (PDOException $e) {
-        $conn->rollBack();
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Failed to update route: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Failed to update route.']);
     }
 }
