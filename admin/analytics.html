@@ -21,10 +21,10 @@
       </div>
     </div>
     <nav class="side-nav">
-      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
-      <a href="analytics.html" class="side-link is-active"><span class="side-icon">📊</span>Analytics</a>
-      <a href="routes.html" class="side-link"><span class="side-icon">🛣️</span>Routes</a>
-      <a href="settings.html" class="side-link"><span class="side-icon">⚙️</span>Settings</a>
+      <a href="dashboard.html" class="side-link"><span class="side-icon"></span>Dashboard</a>
+      <a href="analytics.html" class="side-link is-active"><span class="side-icon"></span>Analytics</a>
+      <a href="routes.html" class="side-link"><span class="side-icon"></span>Routes</a>
+      <a href="settings.html" class="side-link"><span class="side-icon"></span>Settings</a>
     </nav>
     <a href="index.html" class="side-logout">← Logout</a>
   </aside>
@@ -33,19 +33,20 @@
     <header class="topbar">
       <div class="topbar-welcome">
         <span class="lead">Welcome,</span>
-        <strong>Administrator</strong>
+        <strong id="topbarWelcomeName">Administrator</strong>
       </div>
+      <span class="region-badge">Biyahe Route System</span>
 
       <div class="topbar-search">
         <input type="text" id="routeCodeSearch" placeholder="Search route code or origin..." oninput="filterRouteCodesTable()" />
       </div>
-      <button class="icon-btn" onclick="loadAnalytics(true)"></button>
+      <button class="icon-btn" onclick="loadAnalytics(true)">🔔</button>
       <a href="settings.html" class="admin-chip">
         <div>
-          <p class="admin-name">Admin</p>
+          <p class="admin-name" id="topbarAdminName">Admin</p>
           <span class="admin-role">ADMIN</span>
         </div>
-        <div class="avatar-circle"></div>
+        <div class="avatar-circle">🧑</div>
       </a>
     </header>
 
@@ -145,6 +146,28 @@
 
 <script>
 let cachedRoutes = [];
+
+// Fetch logged-in admin user information
+async function fetchAdminProfile() {
+  try {
+    const res = await fetch('../admin_profile.php', { credentials: 'include' });
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return;
+    }
+    const data = await res.json();
+    if (data.success && data.admin) {
+      const username = data.admin.username;
+      const welcomeNameEl = document.getElementById('topbarWelcomeName');
+      const adminNameEl = document.getElementById('topbarAdminName');
+      
+      if (welcomeNameEl) welcomeNameEl.textContent = username;
+      if (adminNameEl) adminNameEl.textContent = username;
+    }
+  } catch (err) {
+    console.error('Failed to load admin profile:', err);
+  }
+}
 
 async function loadAnalytics(isManualRefresh) {
   try {
@@ -395,6 +418,7 @@ function showToast(message) {
   }, 3000);
 }
 
+fetchAdminProfile();
 loadAnalytics(false);
 </script>
 

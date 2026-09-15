@@ -1227,12 +1227,32 @@ button {
 
 .filter-chip input,
 .filter-chip select {
-  background: none;
-  border: none;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  border: 0 !important;
+  border-style: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
   color: var(--text-primary);
   font-size: 12px;
-  outline: none;
   font-family: var(--font-body);
+  padding-right: 20px !important;
+  cursor: pointer;
+  
+  /* Custom Orange Arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ff7300' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right center !important;
+}
+
+/* Ensure focus outline on the inner select is completely killed */
+.filter-chip select:focus,
+.filter-chip select:active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .filter-count {

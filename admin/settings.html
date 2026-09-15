@@ -10,7 +10,6 @@
   <style>
     /* ============================================================
        SETTINGS PAGE - Pure HTML + CSS
-       No JavaScript Required!
        ============================================================ */
 
     .settings-grid {
@@ -90,8 +89,8 @@
     }
 
     .setting-item select:focus {
-      border-color: var(--brown-400);
-      box-shadow: 0 0 0 3px rgba(139, 107, 79, 0.12);
+      border-color: #ff7300;
+      box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.15);
     }
 
     /* ---------- Toggle Switch (Pure CSS) ---------- */
@@ -136,47 +135,73 @@
     }
 
     .toggle:has(input:checked) {
-      background: var(--brown-500);
+      background: #ff7300;
     }
 
     .toggle:hover {
       opacity: 0.85;
     }
 
-    .toggle input:focus-visible ~ .slider {
-      outline: 2px solid var(--brown-400);
-      outline-offset: 2px;
-    }
-
     /* ---------- Status Badges ---------- */
-    .status-online {
+    .status-online, .status-ok {
       color: #4caf50;
       font-weight: 600;
     }
 
-    .status-online::before {
-      content: "● ";
-    }
-
-    .status-ok {
-      color: #4caf50;
-      font-weight: 600;
-    }
-
-    .status-ok::before {
+    .status-online::before, .status-ok::before {
       content: "● ";
     }
 
     /* ============================================================
-       PROFILE CARD WITH EDIT FUNCTIONALITY
+       PROFILE CARD & ACCOUNT TOGGLES
        ============================================================ */
 
-    /* The checkbox that controls edit mode */
     .profile-edit-toggle {
       display: none;
     }
 
-    /* Profile Card */
+    /* Hide ALL edit fields by default across the page */
+    .edit-field {
+      display: none !important;
+    }
+
+    /* Show display fields by default */
+    .display-field {
+      display: block;
+    }
+
+    /* Input styling for edit mode */
+    .edit-field input[type="text"],
+    .edit-field input[type="email"] {
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--brown-200);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      font-family: var(--font-body);
+      transition: border-color 0.2s;
+    }
+
+    .edit-field input[type="text"]:focus,
+    .edit-field input[type="email"]:focus {
+      border-color: #ff7300;
+      box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.15);
+    }
+
+    /* WHEN CHECKED: Hide static text and show textfields everywhere */
+    .profile-edit-toggle:checked ~ .profile-card .display-field,
+    .profile-edit-toggle:checked ~ .settings-grid .display-field {
+      display: none !important;
+    }
+
+    .profile-edit-toggle:checked ~ .profile-card .edit-field,
+    .profile-edit-toggle:checked ~ .settings-grid .edit-field {
+      display: block !important;
+    }
+
+    /* Profile Card Layout */
     .profile-card {
       background: var(--bg-panel);
       border: 1px solid var(--brown-100);
@@ -192,10 +217,9 @@
       transition: border-color 0.3s, box-shadow 0.3s;
     }
 
-    /* Edit mode highlight */
     .profile-edit-toggle:checked ~ .profile-card {
-      border-color: var(--brown-400);
-      box-shadow: 0 0 0 3px rgba(139, 107, 79, 0.15), var(--shadow-md);
+      border-color: #ff7300;
+      box-shadow: 0 0 0 3px rgba(255, 115, 0, 0.15), var(--shadow-md);
     }
 
     .profile-card .avatar {
@@ -212,7 +236,7 @@
     }
 
     .profile-edit-toggle:checked ~ .profile-card .avatar {
-      border-color: var(--brown-500);
+      border-color: #ff7300;
     }
 
     .profile-card .info {
@@ -249,54 +273,18 @@
       display: inline-block;
       font-size: 10px;
       font-weight: 600;
-      color: var(--brown-500);
+      color: #ff7300;
       background: var(--brown-100);
       padding: 2px 10px;
       border-radius: 4px;
       margin-top: 4px;
     }
 
-    /* Edit fields - hidden by default */
-    .profile-card .edit-field {
-      display: none;
-      padding: 4px 0;
-    }
-
-    .profile-card .edit-field input[type="text"],
-    .profile-card .edit-field input[type="email"] {
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      border: 2px solid var(--brown-200);
-      background: var(--bg-body);
-      color: var(--text-primary);
-      font-size: 14px;
-      outline: none;
-      font-family: var(--font-body);
-      width: 200px;
-      transition: border-color 0.2s;
-    }
-
-    .profile-card .edit-field input[type="text"]:focus,
-    .profile-card .edit-field input[type="email"]:focus {
-      border-color: var(--brown-400);
-      box-shadow: 0 0 0 3px rgba(139, 107, 79, 0.12);
-    }
-
-    /* Show edit fields when checkbox is checked */
-    .profile-edit-toggle:checked ~ .profile-card .display-field {
-      display: none;
-    }
-
-    .profile-edit-toggle:checked ~ .profile-card .edit-field {
-      display: block;
-    }
-
-    /* Edit mode label */
     .edit-mode-label {
       position: absolute;
       top: -10px;
       right: 20px;
-      background: var(--brown-500);
+      background: #ff7300;
       color: var(--white);
       padding: 2px 14px;
       border-radius: 999px;
@@ -312,7 +300,7 @@
       opacity: 1;
     }
 
-    /* Profile Actions */
+    /* Actions & Buttons */
     .profile-card .actions {
       display: flex;
       gap: 10px;
@@ -334,42 +322,20 @@
       text-align: center;
     }
 
-    .profile-card .actions .btn-primary {
-      background: var(--brown-500);
-      color: var(--white);
-    }
-
-    .profile-card .actions .btn-primary:hover {
-      background: var(--brown-600);
-      transform: translateY(-2px);
-    }
-
-    .profile-card .actions .btn-outline {
-      background: transparent;
-      color: var(--text-secondary);
-      border: 2px solid var(--brown-200);
-    }
-
-    .profile-card .actions .btn-outline:hover {
-      border-color: var(--brown-400);
-      background: var(--bg-soft);
-      transform: translateY(-2px);
-    }
-
-    /* Edit buttons - hidden/shown based on mode */
     .profile-card .actions .btn-edit {
       background: var(--brown-500);
       color: var(--white);
     }
 
     .profile-card .actions .btn-edit:hover {
-      background: var(--brown-600);
+      background: #ff7300;
       transform: translateY(-2px);
     }
 
     .profile-card .actions .btn-save {
       background: #4caf50;
       color: var(--white);
+      display: none;
     }
 
     .profile-card .actions .btn-save:hover {
@@ -380,6 +346,7 @@
     .profile-card .actions .btn-cancel {
       background: var(--brown-200);
       color: var(--text-secondary);
+      display: none;
     }
 
     .profile-card .actions .btn-cancel:hover {
@@ -387,26 +354,6 @@
       transform: translateY(-2px);
     }
 
-    /* Hide save/cancel buttons by default */
-    .profile-card .actions .btn-save,
-    .profile-card .actions .btn-cancel {
-      display: none;
-    }
-
-    /* Show save/cancel buttons when in edit mode */
-    .profile-edit-toggle:checked ~ .profile-card .actions .btn-edit {
-      display: none;
-    }
-
-    .profile-edit-toggle:checked ~ .profile-card .actions .btn-save {
-      display: inline-block;
-    }
-
-    .profile-edit-toggle:checked ~ .profile-card .actions .btn-cancel {
-      display: inline-block;
-    }
-
-    /* Password link in edit mode */
     .profile-card .actions .btn-password {
       background: transparent;
       color: var(--brown-500);
@@ -414,13 +361,20 @@
     }
 
     .profile-card .actions .btn-password:hover {
-      border-color: var(--brown-400);
+      border-color: #ff7300;
       background: var(--bg-soft);
       transform: translateY(-2px);
     }
 
+    /* Switch action buttons when edit mode is on */
+    .profile-edit-toggle:checked ~ .profile-card .actions .btn-edit,
     .profile-edit-toggle:checked ~ .profile-card .actions .btn-password {
-      display: none;
+      display: none !important;
+    }
+
+    .profile-edit-toggle:checked ~ .profile-card .actions .btn-save,
+    .profile-edit-toggle:checked ~ .profile-card .actions .btn-cancel {
+      display: inline-block !important;
     }
 
     /* ---------- Responsive ---------- */
@@ -450,12 +404,6 @@
         min-width: 120px;
       }
 
-      .profile-card .edit-field input[type="text"],
-      .profile-card .edit-field input[type="email"] {
-        width: 100%;
-        max-width: 280px;
-      }
-
       .setting-item {
         flex-direction: column;
         align-items: flex-start;
@@ -464,29 +412,6 @@
 
       .setting-item select {
         width: 100%;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .profile-card .actions {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      .profile-card .actions .btn {
-        width: 100%;
-        min-width: unset;
-      }
-
-      .profile-card .edit-field input[type="text"],
-      .profile-card .edit-field input[type="email"] {
-        width: 100%;
-      }
-
-      .edit-mode-label {
-        right: 10px;
-        font-size: 9px;
-        padding: 2px 10px;
       }
     }
   </style>
@@ -504,12 +429,12 @@
       </div>
     </div>
     <nav class="side-nav">
-      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
-      <a href="analytics.html" class="side-link"><span class="side-icon">📊</span>Analytics</a>
-      <a href="routes.html" class="side-link"><span class="side-icon">🛣️</span>Routes</a>
-      <a href="settings.html" class="side-link is-active"><span class="side-icon">⚙️</span>Settings</a>
+      <a href="dashboard.html" class="side-link"><span class="side-icon"></span>Dashboard</a>
+      <a href="analytics.html" class="side-link"><span class="side-icon"></span>Analytics</a>
+      <a href="routes.html" class="side-link"><span class="side-icon"></span>Routes</a>
+      <a href="settings.html" class="side-link is-active"><span class="side-icon"></span>Settings</a>
     </nav>
-    <a href="login.html" class="side-logout">← Logout</a>
+    <a href="index.html" class="side-logout">← Logout</a>
   </aside>
 
   <!-- Main -->
@@ -518,16 +443,16 @@
     <header class="topbar">
       <div class="topbar-welcome">
         <span class="lead">Welcome,</span>
-        <strong>Administrator</strong>
+        <strong id="topbarWelcomeName">Administrator</strong>
       </div>
-      <span class="region-badge"> Cebu Network</span>
+      <span class="region-badge">Biyahe Route System</span>
       <div class="topbar-search">
         🔍 <input type="text" placeholder="Search..." />
       </div>
       <a href="#" class="icon-btn"></a>
       <a href="settings.html" class="admin-chip">
         <div>
-          <p class="admin-name">Admin</p>
+          <p class="admin-name" id="topbarAdminName">Admin</p>
           <span class="admin-role">ADMIN</span>
         </div>
         <div class="avatar-circle"></div>
@@ -540,64 +465,52 @@
       <p style="color:var(--text-secondary); margin-bottom:24px;">Manage your account and system preferences.</p>
 
       <!-- ========================================== -->
-      <!-- PROFILE CARD WITH EDIT FUNCTIONALITY      -->
+      <!-- EDIT TOGGLE CONTROL                       -->
       <!-- ========================================== -->
       <input type="checkbox" id="editProfileToggle" class="profile-edit-toggle" />
 
+      <!-- ========================================== -->
+      <!-- PROFILE CARD                              -->
+      <!-- ========================================== -->
       <div class="profile-card">
-        <!-- Edit Mode Badge -->
-        <span class="edit-mode-label"> EDIT MODE</span>
-
-        <!-- Avatar -->
+        <span class="edit-mode-label">EDIT MODE</span>
         <div class="avatar"></div>
 
-        <!-- Info -->
         <div class="info">
-          <!-- Name - Display Mode -->
+          <!-- Name Group -->
           <div class="name-group display-field">
-            <h3>Administrator</h3>
+            <h3 id="profileNameDisplay">Loading…</h3>
           </div>
-          <!-- Name - Edit Mode -->
           <div class="name-group edit-field">
-            <input type="text" value="Administrator" id="profileNameInput" />
+            <input type="text" id="profileNameInput" />
           </div>
 
-          <!-- Email - Display Mode -->
+          <!-- Email Group -->
           <div class="email-group display-field">
-            <span class="email">admin@biyahe.com</span>
+            <span class="email" id="profileEmailDisplay">Loading…</span>
             <span class="role">Administrator</span>
           </div>
-          <!-- Email - Edit Mode -->
           <div class="email-group edit-field">
-            <input type="email" value="admin@biyahe.com" id="profileEmailInput" />
+            <input type="email" id="profileEmailInput" />
             <span class="role">Administrator</span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="actions">
-          <!-- Edit Button (visible in view mode) -->
-          <label for="editProfileToggle" class="btn btn-edit"> Edit Profile</label>
-
-          <!-- Save Button (visible in edit mode) -->
-          <label for="editProfileToggle" class="btn btn-save"> Save Changes</label>
-
-          <!-- Cancel Button (visible in edit mode) -->
-          <label for="editProfileToggle" class="btn btn-cancel">✖ Cancel</label>
-
-          <!-- Change Password (always visible, goes to change-password.html) -->
-          <a href="change-password.html" class="btn btn-password"> Change Password</a>
+          <label for="editProfileToggle" class="btn btn-edit">Edit Profile</label>
+          <label for="editProfileToggle" class="btn btn-save" onclick="saveProfile()">Save Changes</label>
+          <label for="editProfileToggle" class="btn btn-cancel" onclick="cancelProfileEdit()">✖ Cancel</label>
+          <a href="change-password.html" class="btn btn-password">Change Password</a>
         </div>
       </div>
 
       <!-- ========================================== -->
-      <!-- SETTINGS GRID                             -->
+      <!-- SETTINGS GRID                              -->
       <!-- ========================================== -->
       <div class="settings-grid">
 
-        <!-- ======================================== -->
-        <!-- ACCOUNT SETTINGS                        -->
-        <!-- ======================================== -->
+        <!-- ACCOUNT SETTINGS -->
         <div class="settings-card">
           <h3>👤 Account</h3>
 
@@ -607,7 +520,10 @@
               <div class="label">Username</div>
               <div class="desc">Your login username</div>
             </div>
-            <span class="value">admin</span>
+            <span class="value display-field" id="settingUsername">Loading…</span>
+            <div class="edit-field">
+              <input type="text" id="settingUsernameInput" />
+            </div>
           </div>
 
           <!-- Email -->
@@ -616,7 +532,19 @@
               <div class="label">Email</div>
               <div class="desc">Your registered email</div>
             </div>
-            <span class="value">admin@biyahe.com</span>
+            <span class="value display-field" id="settingEmail">Loading…</span>
+            <div class="edit-field">
+              <input type="email" id="settingEmailInput" />
+            </div>
+          </div>
+
+          <!-- Admin UUID (Read-only) -->
+          <div class="setting-item">
+            <div>
+              <div class="label">Admin UUID</div>
+              <div class="desc">Unique account identifier</div>
+            </div>
+            <span class="value" id="settingUuid" style="font-family: monospace; font-size: 11px; font-weight: 500;">Loading…</span>
           </div>
 
           <!-- Role -->
@@ -641,13 +569,10 @@
           </div>
         </div>
 
-        <!-- ======================================== -->
-        <!-- PREFERENCES                             -->
-        <!-- ======================================== -->
+        <!-- PREFERENCES -->
         <div class="settings-card">
           <h3>⚙️ Preferences</h3>
 
-          <!-- Language -->
           <div class="setting-item">
             <div>
               <div class="label">Language</div>
@@ -656,16 +581,14 @@
             <select>
               <option value="English (US)" selected>English (US)</option>
               <option value="Filipino">Filipino</option>
-             
             </select>
           </div>
+        </div>
 
-        <!-- ======================================== -->
-        <!-- SYSTEM INFO                             -->
-        <!-- ======================================== -->
+        <!-- SYSTEM INFO -->
         <div class="settings-card" style="grid-column: 1 / -1; max-width: 100%;">
           <h3>ℹ️ System Info</h3>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
 
             <div class="setting-item" style="border-bottom: none; flex-direction: column; align-items: flex-start; padding: 8px 0;">
               <div>
@@ -706,6 +629,148 @@
     </main>
   </div>
 </div>
+
+<script>
+let currentAdmin = { username: '', email: '', uuid: '' };
+
+// Sync inputs whenever the user types in either input set
+document.addEventListener('input', (e) => {
+  if (e.target.id === 'profileNameInput') {
+    document.getElementById('settingUsernameInput').value = e.target.value;
+  } else if (e.target.id === 'settingUsernameInput') {
+    document.getElementById('profileNameInput').value = e.target.value;
+  } else if (e.target.id === 'profileEmailInput') {
+    document.getElementById('settingEmailInput').value = e.target.value;
+  } else if (e.target.id === 'settingEmailInput') {
+    document.getElementById('profileEmailInput').value = e.target.value;
+  }
+});
+
+function showToast(message) {
+  const container = document.getElementById('toastContainer') || (function() {
+    const div = document.createElement('div');
+    div.id = 'toastContainer';
+    div.className = 'toast-container';
+    document.body.appendChild(div);
+    return div;
+  })();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast-item';
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(100px)';
+    setTimeout(() => toast.remove(), 400);
+  }, 3000);
+}
+
+async function loadProfile() {
+  try {
+    const res = await fetch('../admin_profile.php', { credentials: 'include' });
+
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const raw = await res.text();
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch (parseErr) {
+      throw new Error(`Server returned non-JSON response (status ${res.status}).`);
+    }
+
+    if (!res.ok || body.success === false) {
+      throw new Error(body.message || `Failed to load profile (status ${res.status}).`);
+    }
+
+    currentAdmin = { username: body.admin.username, email: body.admin.email, uuid: body.admin.admin_uuid };
+    applyProfileToDom();
+  } catch (err) {
+    console.error('Load profile failed:', err);
+    showToast(`❌ ${err.message}`);
+  }
+}
+
+function applyProfileToDom() {
+  document.getElementById('profileNameDisplay').textContent = currentAdmin.username;
+  document.getElementById('profileNameInput').value = currentAdmin.username;
+
+  document.getElementById('profileEmailDisplay').textContent = currentAdmin.email;
+  document.getElementById('profileEmailInput').value = currentAdmin.email;
+
+  document.getElementById('settingUsername').textContent = currentAdmin.username;
+  if (document.getElementById('settingUsernameInput')) {
+    document.getElementById('settingUsernameInput').value = currentAdmin.username;
+  }
+
+  document.getElementById('settingEmail').textContent = currentAdmin.email;
+  if (document.getElementById('settingEmailInput')) {
+    document.getElementById('settingEmailInput').value = currentAdmin.email;
+  }
+
+  document.getElementById('settingUuid').textContent = currentAdmin.uuid;
+  document.getElementById('topbarWelcomeName').textContent = currentAdmin.username;
+  document.getElementById('topbarAdminName').textContent = currentAdmin.username;
+}
+
+async function saveProfile() {
+  const newUsername = document.getElementById('profileNameInput').value.trim();
+  const newEmail = document.getElementById('profileEmailInput').value.trim();
+
+  if (!newUsername || !newEmail) {
+    showToast('⚠️ Username and email are required.');
+    document.getElementById('editProfileToggle').checked = true;
+    return;
+  }
+
+  try {
+    const res = await fetch('../admin_profile.php', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username: newUsername, email: newEmail })
+    });
+
+    const raw = await res.text();
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch (parseErr) {
+      throw new Error(`Server returned non-JSON response (status ${res.status}).`);
+    }
+
+    if (!res.ok || body.success === false) {
+      throw new Error(body.message || `Failed to update profile (status ${res.status}).`);
+    }
+
+    currentAdmin = { ...currentAdmin, username: body.admin.username, email: body.admin.email };
+    applyProfileToDom();
+    showToast('✅ Profile updated successfully!');
+  } catch (err) {
+    console.error('Save profile failed:', err);
+    showToast(`❌ ${err.message}`);
+    document.getElementById('editProfileToggle').checked = true;
+  }
+}
+
+function cancelProfileEdit() {
+  document.getElementById('profileNameInput').value = currentAdmin.username;
+  document.getElementById('profileEmailInput').value = currentAdmin.email;
+  if (document.getElementById('settingUsernameInput')) {
+    document.getElementById('settingUsernameInput').value = currentAdmin.username;
+  }
+  if (document.getElementById('settingEmailInput')) {
+    document.getElementById('settingEmailInput').value = currentAdmin.email;
+  }
+}
+
+loadProfile();
+</script>
 
 </body>
 </html>
