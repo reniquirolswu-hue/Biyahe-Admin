@@ -64,18 +64,32 @@
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
+    /* Custom dropdown override for .form-group select */
+    .form-group select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none; /* Removes OS default styling & default arrow */
+      padding-right: 36px; /* Spacing so text doesn't overlap the custom arrow */
+      cursor: pointer;
+      /* Custom Orange Chevron SVG Arrow */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ff7300' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
     .form-group input::placeholder {
       color: var(--text-light);
     }
 
     .form-group input:focus, .form-group select:focus {
-      border-color: var(--brown-400);
-      box-shadow: 0 0 0 4px rgba(139, 107, 79, 0.12);
+      border-color: #ff7300;
+      box-shadow: 0 0 0 4px rgba(255, 115, 0, 0.15);
     }
 
     .form-group select option {
-      background: var(--bg-panel);
-      color: var(--text-primary);
+      background: var(--bg-panel, #1e1e24);
+      color: var(--text-primary, #e2e8f0);
+      padding: 10px;
     }
 
     .map-container {
@@ -169,20 +183,21 @@
       </div>
     </div>
     <nav class="side-nav">
-      <a href="dashboard.html" class="side-link"><span class="side-icon">▦</span>Dashboard</a>
-      <a href="analytics.html" class="side-link"><span class="side-icon">📊</span>Analytics</a>
-      <a href="routes.html" class="side-link is-active"><span class="side-icon">🛣️</span>Routes</a>
-      <a href="settings.html" class="side-link"><span class="side-icon">⚙️</span>Settings</a>
+      <a href="dashboard.html" class="side-link"><span class="side-icon"></span>Dashboard</a>
+      <a href="analytics.html" class="side-link"><span class="side-icon"></span>Analytics</a>
+      <a href="routes.html" class="side-link is-active"><span class="side-icon"></span>Routes</a>
+      <a href="settings.html" class="side-link"><span class="side-icon"></span>Settings</a>
     </nav>
-    <a href="login.html" class="side-logout">← Logout</a>
+    <a href="index.html" class="side-logout">← Logout</a>
   </aside>
 
   <div class="app-main">
     <header class="topbar">
       <div class="topbar-welcome">
         <span class="lead">Welcome,</span>
-        <strong>Administrator</strong>
+        <strong id="topbarWelcomeName">Administrator</strong>
       </div>
+      <span class="region-badge">Biyahe Route System</span>
     
       <div class="topbar-search">
         <input type="text" placeholder="🔍 Search dashboard..." />
@@ -190,7 +205,7 @@
       <button class="icon-btn" onclick="showToast('🛣️ Route list updated!')">🔔</button>
       <a href="settings.html" class="admin-chip">
         <div>
-          <p class="admin-name">Admin</p>
+          <p class="admin-name" id="topbarAdminName">Admin</p>
           <span class="admin-role">ADMIN</span>
         </div>
         <div class="avatar-circle">🧑</div>
@@ -210,14 +225,14 @@
 
         <div class="filter-bar fade-in delay-2">
           <label class="filter-chip">🔍 <input type="text" placeholder="Filter by code..." /></label>
-          <label class="filter-chip">
-            <select>
-              <option>All Routes</option>
-              <option>Trunk</option>
-              <option>Feeder</option>
-              <option>Express</option>
-            </select>
-          </label>
+            <label class="filter-chip">
+              <select id="typeFilter" class="chip-select">
+                <option>All Routes</option>
+                <option>Trunk</option>
+                <option>Feeder</option>
+                <option>Express</option>
+              </select>
+            </label>
           <span class="filter-count">● Loading routes…</span>
         </div>
 
@@ -291,35 +306,44 @@
 </div>
 
 <script>
-// Set this to your MapTiler API key (get one free at https://cloud.maptiler.com/account/keys/).
-// This is the SAME key your mobile app already uses to load MapTiler tiles.
-const MAPTILER_KEY = '5hqAX6ehvk13Ic2HPmia'; // <-- put your MapTiler API key here
-
-// MapTiler style to load. Swap this to change the map's look without touching initMap().
-// Other common options: 'basic-v2', 'bright-v2', 'satellite', 'hybrid', 'topo-v2', 'toner-v2'.
-// Full catalog: https://cloud.maptiler.com/maps/
+const MAPTILER_KEY = '5hqAX6ehvk13Ic2HPmia';
 const STYLE_URL = `https://api.maptiler.com/maps/01a06643-7cd4-7150-869a-610c3182da14/style.json?key=5hqAX6ehvk13Ic2HPmia`;
-
-// Routing APIs return one point per road segment (often 50-100+ for a short
-// route), which makes the drawn line unusable to hand-edit. This tolerance
-// (in degrees) controls how aggressively that's thinned out before drawing —
-// higher = fewer dots but a looser fit to the original path; lower = more
-// dots but closer to the raw routed geometry. ~0.00005 ≈ 5 meters in Cebu's
-// latitude, which is generally tight enough to keep street-level accuracy.
 const SIMPLIFY_TOLERANCE = 0.00005;
 
 let map = null;
 let draw = null;
-let terminals = [];          // cache of {terminal_id, terminal_name, latitude, longitude} from the API
+let terminals = [];          // cache of {terminal_id, terminal_name, latitude, longitude}
 let originTerminal = null;   // selected/created terminal object for origin
 let destTerminal = null;     // selected/created terminal object for destination
 let originMarker = null;
 let destinationMarker = null;
-let currentRouteId = null;   // id of the drawn map feature (MapboxDraw), so we can replace it cleanly
-let armedRole = null;        // 'origin' | 'destination' | null — set by "+ New" until the next map click
+let currentRouteId = null;   // id of drawn map feature
+let armedRole = null;        // 'origin' | 'destination' | null
 
-let allRoutes = [];             // cache of routes loaded from routes.php, used to render the list & look up edits
-let currentRouteRecordId = null; // route_id of the route being edited, or null when creating a new one
+let allRoutes = [];             // cache of routes
+let currentRouteRecordId = null; // route_id of route being edited
+
+// Fetch logged-in admin user information
+async function fetchAdminProfile() {
+  try {
+    const res = await fetch('../admin_profile.php', { credentials: 'include' });
+    if (res.status === 401) {
+      window.location.href = 'login.html';
+      return;
+    }
+    const data = await res.json();
+    if (data.success && data.admin) {
+      const username = data.admin.username;
+      const welcomeNameEl = document.getElementById('topbarWelcomeName');
+      const adminNameEl = document.getElementById('topbarAdminName');
+      
+      if (welcomeNameEl) welcomeNameEl.textContent = username;
+      if (adminNameEl) adminNameEl.textContent = username;
+    }
+  } catch (err) {
+    console.error('Failed to load admin profile:', err);
+  }
+}
 
 function showToast(message) {
   const container = document.getElementById('toastContainer') || (function() {
@@ -348,7 +372,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// --- Route list (loaded from the database) ---------------------------------
+// --- Route list -----------------------------------------------------------
 
 async function loadRoutesList() {
   try {
@@ -396,8 +420,7 @@ function renderRoutes() {
   `).join('');
 }
 
-// --- Opens the side-by-side workspace view (Add mode when routeId is null,
-// Edit mode when it's an existing route's id) -------------------------------
+// --- Workspace Control -----------------------------------------------------
 
 async function openRouteEditor(routeId = null) {
   document.getElementById('listView').style.display = 'none';
@@ -406,7 +429,7 @@ async function openRouteEditor(routeId = null) {
   const route = routeId ? allRoutes.find(r => r.route_id === routeId) : null;
 
   resetEditorForm();
-  currentRouteRecordId = routeId; // set AFTER reset, since resetEditorForm() clears it
+  currentRouteRecordId = routeId;
 
   if (route) {
     document.getElementById('formTitle').textContent = `Edit Route (${route.route_code})`;
@@ -416,7 +439,6 @@ async function openRouteEditor(routeId = null) {
     document.getElementById('formTitle').textContent = 'Add New Route';
   }
 
-  // Bail early with a clear message instead of silently failing if no key is set
   if (!MAPTILER_KEY) {
     document.getElementById('mapKeyWarning').style.display = 'flex';
     document.getElementById('map').style.display = 'none';
@@ -425,7 +447,6 @@ async function openRouteEditor(routeId = null) {
   document.getElementById('mapKeyWarning').style.display = 'none';
   document.getElementById('map').style.display = 'block';
 
-  // Initialize MapLibre if not already initialized
   if (!map) {
     initMap();
   } else {
@@ -448,16 +469,12 @@ function closeRouteEditor() {
 function initMap() {
   map = new maplibregl.Map({
     container: 'map',
-    // BUG FIX: the key was never interpolated into this URL before (?key= with
-    // nothing after it, regardless of MAPTILER_KEY's value). Now it's threaded through
-    // via the STYLE_URL constant defined above.
     style: STYLE_URL,
     center: [123.8854, 10.3156],
     zoom: 13
   });
 
   map.on('error', (e) => {
-    // Surfaces bad/expired keys instead of a silently blank map
     console.error('MapLibre error:', e && e.error);
     showToast('❌ Map failed to load — check your MapTiler key.');
   });
@@ -468,8 +485,6 @@ function initMap() {
   });
   map.addControl(draw);
 
-  // A map click only does something when "+ New" armed a role first. Otherwise
-  // terminal selection happens via the dropdowns, since terminals are DB rows.
   map.on('click', (e) => {
     if (!armedRole) return;
     promptNewTerminal(armedRole, [e.lngLat.lng, e.lngLat.lat]);
@@ -518,9 +533,6 @@ function onTerminalSelected(role) {
   applyTerminal(role, terminal);
 }
 
-// options.skipRoute=true skips the auto-routing lookup — used when loading an
-// existing route for editing, since we want to draw its *saved* waypoints,
-// not a freshly recalculated road path.
 function applyTerminal(role, terminal, options = {}) {
   const skipRoute = options.skipRoute === true;
 
@@ -543,7 +555,6 @@ function applyTerminal(role, terminal, options = {}) {
   if (!skipRoute) maybeDrawRoute();
 }
 
-// "+ New" arms map-click mode for that role; the next map click prompts for a name.
 function armNewTerminal(role) {
   armedRole = role;
   document.getElementById('terminalArmedHint').style.display = 'block';
@@ -568,9 +579,6 @@ async function promptNewTerminal(role, lngLat) {
       })
     });
 
-    // Read the body as text first — this works whether the server sent valid
-    // JSON, a PHP warning/error mixed into the output, or an empty body, and
-    // lets us log exactly what came back instead of guessing.
     const raw = await response.text();
     console.log('terminals.php POST response:', response.status, raw);
 
@@ -578,14 +586,14 @@ async function promptNewTerminal(role, lngLat) {
     try {
       body = JSON.parse(raw);
     } catch (parseErr) {
-      throw new Error(`Server returned non-JSON response (status ${response.status}). Check the console/network tab for the raw output.`);
+      throw new Error(`Server returned non-JSON response (status ${response.status}).`);
     }
 
     if (!response.ok || body.success === false) {
       throw new Error(body.message || `Server error (status ${response.status}) creating terminal.`);
     }
 
-    const newTerminal = body; // expects { terminal_id, terminal_name, latitude, longitude }
+    const newTerminal = body;
 
     terminals.push(newTerminal);
     populateTerminalSelect(role === 'origin' ? 'originTerminalSelect' : 'destTerminalSelect', newTerminal);
@@ -598,19 +606,14 @@ async function promptNewTerminal(role, lngLat) {
   }
 }
 
-// --- Route line between the two terminals ----------------------------------
+// --- Route line drawing ----------------------------------------------------
 
-// Fires the routing request once both terminals are set. Re-selecting either
-// one will re-run this and replace the previous line.
 function maybeDrawRoute() {
   if (originTerminal && destTerminal) {
     fetchAndDrawRoute();
   }
 }
 
-// Loads an existing route's saved waypoints (not a fresh routing-API lookup)
-// so editing shows exactly what was last saved, with the ability to re-drag
-// points or re-pick terminals from there.
 async function loadRouteForEditing(routeId) {
   try {
     const response = await fetch(`../routes.php?id=${routeId}`);
@@ -663,12 +666,6 @@ async function loadRouteForEditing(routeId) {
   }
 }
 
-// --- Line simplification (Ramer-Douglas-Peucker) ---------------------------
-// Thins a routed line down to the handful of points that actually define its
-// shape, so the admin drags a manageable number of vertices instead of one
-// per road segment. Coordinates are treated as flat [lng, lat] pairs, which
-// is accurate enough at city scale.
-
 function perpendicularDistance(point, lineStart, lineEnd) {
   const [x, y] = point;
   const [x1, y1] = lineStart;
@@ -679,11 +676,9 @@ function perpendicularDistance(point, lineStart, lineEnd) {
   const lengthSquared = dx * dx + dy * dy;
 
   if (lengthSquared === 0) {
-    // lineStart and lineEnd are the same point
     return Math.hypot(x - x1, y - y1);
   }
 
-  // Project the point onto the line, clamped to the segment
   let t = ((x - x1) * dx + (y - y1) * dy) / lengthSquared;
   t = Math.max(0, Math.min(1, t));
   const projX = x1 + t * dx;
@@ -710,7 +705,6 @@ function simplifyLine(points, tolerance) {
   if (maxDistance > tolerance) {
     const left = simplifyLine(points.slice(0, splitIndex + 1), tolerance);
     const right = simplifyLine(points.slice(splitIndex), tolerance);
-    // Drop the duplicate point where left and right meet
     return left.slice(0, -1).concat(right);
   }
 
@@ -720,7 +714,6 @@ function simplifyLine(points, tolerance) {
 async function fetchAndDrawRoute() {
   const start = [originTerminal.longitude, originTerminal.latitude];
   const end = [destTerminal.longitude, destTerminal.latitude];
-  // BUG FIX: same missing-key issue as the style URL above.
   const url = `https://api.maptiler.com/api/routes/driving/${start[0]},${start[1]};${end[0]},${end[1]}?key=5hqAX6ehvk13Ic2HPmia&geometries=geojson`;
 
   try {
@@ -733,13 +726,10 @@ async function fetchAndDrawRoute() {
     const data = await response.json();
     const routeGeoJSON = data.routes ? data.routes[0].geometry : data.trips[0].geometry;
 
-    // Cut the vertex count down before drawing — see SIMPLIFY_TOLERANCE above.
     const originalCount = routeGeoJSON.coordinates.length;
     const simplifiedCoords = simplifyLine(routeGeoJSON.coordinates, SIMPLIFY_TOLERANCE);
     console.log(`Route simplified: ${originalCount} → ${simplifiedCoords.length} points`);
 
-    // Remove the previous line before drawing the new/updated one, so re-selecting
-    // origin or destination replaces the route instead of stacking duplicates.
     if (currentRouteId) {
       draw.delete(currentRouteId);
     }
@@ -750,15 +740,13 @@ async function fetchAndDrawRoute() {
     });
     currentRouteId = ids[0];
 
-    // Select it right away so the user can click a point on the line and drag
-    // to adjust it without an extra click to select the feature first.
     draw.changeMode('simple_select', { featureIds: [currentRouteId] });
   } catch (error) {
     showToast('❌ Error calculating road path.');
   }
 }
 
-// --- Save --------------------------------------------------------------
+// --- Save Route ------------------------------------------------------------
 
 async function saveRoute() {
   const code = document.getElementById('routeCode').value.trim();
@@ -779,9 +767,6 @@ async function saveRoute() {
     return;
   }
 
-  // The route table has no geometry column — the line is stored as ordered
-  // waypoint rows instead, so convert the drawn line's vertices into that shape.
-  // GeoJSON coordinates are [lng, lat]; waypoint columns are (latitude, longitude).
   const lineCoords = drawnData.features[0].geometry.coordinates;
   const waypoints = lineCoords.map((coord, index) => ({
     sequence_no: index + 1,
@@ -791,8 +776,6 @@ async function saveRoute() {
 
   const payload = {
     route_code: code,
-    // created_by is intentionally NOT sent — routes.php derives it from the
-    // logged-in admin's session, since the client shouldn't be trusted for this.
     vehicle_type: document.getElementById('vehicleType').value,
     origin_terminal_id: originTerminal.terminal_id,
     destination_terminal_id: destTerminal.terminal_id,
@@ -800,14 +783,11 @@ async function saveRoute() {
     waypoints: waypoints
   };
 
-  // Editing an existing route PUTs to its id; creating a new one POSTs.
   const isEdit = !!currentRouteRecordId;
   const url = isEdit ? `../routes.php?id=${currentRouteRecordId}` : '../routes.php';
   const method = isEdit ? 'PUT' : 'POST';
 
   try {
-    // Expects the backend to write the route row and its waypoint rows together
-    // (e.g. in one DB transaction), since waypoint.route_id needs the route_id.
     const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
@@ -821,7 +801,7 @@ async function saveRoute() {
     try {
       body = JSON.parse(raw);
     } catch (parseErr) {
-      throw new Error(`Server returned non-JSON response (status ${response.status}). Check the console for the raw output.`);
+      throw new Error(`Server returned non-JSON response (status ${response.status}).`);
     }
 
     if (!response.ok || body.success === false) {
@@ -853,9 +833,9 @@ function resetEditorForm() {
   document.getElementById('destTerminalSelect').value = '';
 }
 
-// Kick things off: populate the list from the database as soon as the page loads.
+// Initialization
+fetchAdminProfile();
 loadRoutesList();
-
 </script>
 
 </body>
