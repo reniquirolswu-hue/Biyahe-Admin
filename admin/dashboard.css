@@ -1,0 +1,280 @@
+/* ============================================================
+   BIYAHE — Dashboard Page
+   Load base.css and app_shell.css BEFORE this file.
+   ============================================================ */
+
+/* Lock main viewport so the outer page never scrolls */
+.dash-content {
+  height: calc(100vh - 70px); /* Matches topbar height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents whole screen scrolling */
+  padding-left: 32px; /* Left spacing */
+  padding-right: 24px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.stat-row {
+  flex-shrink: 0;
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0; /* Lets panel cards stretch and collapse gracefully */
+}
+
+.dash-grid > .panel {
+  height: 100%;
+  min-height: 0; /* Prevents long data tables from expanding the panel height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- Transit Map Container ---------- */
+.map-canvas {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--brown-100);
+  background: var(--bg-soft);
+  margin-bottom: 12px;
+  flex: 1; /* Fills remaining space in the map panel */
+  min-height: 0;
+}
+
+#cebuMap {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.map-key-warning {
+  display: none;
+  background: var(--brown-100);
+  border: 1px solid var(--brown-300);
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+
+/* ---------- Dark & Orange Map Popup Override ---------- */
+.maplibregl-popup-content {
+  background-color: #121214 !important; /* Deep dark background */
+  color: #ffffff !important;
+  font-family: var(--font-body);
+  font-size: 13px;
+  border-radius: 8px !important;
+  border: 1px solid #ff7300 !important;   /* Orange border */
+  padding: 12px 16px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Change default popup text elements to orange */
+.maplibregl-popup-content strong,
+.maplibregl-popup-content b,
+.maplibregl-popup-content h1,
+.maplibregl-popup-content h2,
+.maplibregl-popup-content h3 {
+  color: #ff7300 !important;
+}
+
+/* Dark Arrow Tip / Pointer matching dark background */
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #121214 !important;
+}
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: #121214 !important;
+}
+.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: #121214 !important;
+}
+.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: #121214 !important;
+}
+
+/* Orange Close Button (X) */
+.maplibregl-popup-close-button {
+  color: #ff7300 !important;
+  font-size: 16px !important;
+  padding: 4px 8px !important;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+}
+
+.maplibregl-popup-close-button:hover {
+  background-color: rgba(255, 115, 0, 0.2) !important;
+  border-radius: 4px;
+}
+
+/* ---------- Map Legend Fix ---------- */
+.map-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary); /* Ensures visibility across light/dark themes */
+  z-index: 10; /* Keeps legend layer above map tiles */
+}
+
+.map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3); /* Helps dots stand out over map textures */
+}
+
+/* ---------- Key Transit Overview Hubs & Route Categories ---------- */
+.hub-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  justify-content: space-between;
+}
+
+.hub-category-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0; /* Lets dash-table-wrapper flex properly inside block */
+}
+
+.category-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brown-500);
+  margin-bottom: 2px;
+}
+
+/* Scrollable Container for Key Transit Tables */
+.dash-table-wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-sm);
+  padding-right: 6px; /* Spacing between table and scrollbar */
+}
+
+/* Custom Sleek Scrollbar styling for Tables */
+.dash-table-wrapper::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dash-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
+.dash-table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--brown-200, #3a3a3d);
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+.dash-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--brown-500, #ff6b00); /* Orange highlight on hover */
+  background-clip: padding-box;
+}
+
+.dash-table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brown-200, #3a3a3d) transparent;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.dash-table th {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--brown-200);
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel);
+  z-index: 1;
+}
+
+.dash-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--brown-100);
+  color: var(--text-primary);
+}
+
+.route-code-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--brown-100);
+  border: 1px solid var(--brown-200);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--brown-500);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .dash-content {
+    height: auto;
+    overflow: auto;
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .dash-grid > .panel {
+    height: auto;
+    overflow: visible;
+  }
+
+  .map-canvas {
+    flex: none;
+  }
+
+  #cebuMap {
+    height: 380px;
+  }
+
+  .hub-categories,
+  .hub-category-block {
+    flex: none;
+  }
+
+  .dash-table-wrapper {
+    flex: none;
+    max-height: 220px;
+  }
+}

@@ -6,35 +6,28 @@
   <title>BIYAHE — Login</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      margin: 0;
-    }
-  </style>
+  <link rel="stylesheet" href="base.css"/>
+  <link rel="stylesheet" href="auth.css"/>
 </head>
 <body>
-
 <div class="center-shell">
   <div class="pill"><span class="dot"></span> Official Transit Gateway</div>
 
   <div class="login-card">
     <div class="login-head">
-      <div class="login-mark">🚌</div>
-      <div class="login-title">BIYAHE <span class="badge-ops">OPS</span></div>
+      <div class="login-mark"><p>B</p></div>
+      <div class="login-title">BIYAHE</div>
       <p class="sub">Admin Portal Login</p>
     </div>
 
     <form class="login-form" id="loginForm" onsubmit="return handleLogin(event)">
       <div id="errorMsg" class="error-msg">⚠️ Invalid username or password. Please try again.</div>
-      <div id="successMsg" class="success-msg">✅ Login successful! Redirecting...</div>
+      <div id="successMsg" class="success-msg"> Login successful! Redirecting...</div>
 
       <div class="field">
         <label for="username">Username or Admin ID</label>
         <div class="input-wrap">
-          <span class="icon">👤</span>
+          <span class="icon"></span>
           <input type="text" id="username" name="username" placeholder="Enter username" autocomplete="username" required />
         </div>
       </div>
@@ -42,13 +35,13 @@
       <div class="field">
         <label for="password">Password <a class="link" href="forgot-password.html">Forgot?</a></label>
         <div class="input-wrap">
-          <span class="icon">🔒</span>
+          <span class="icon"></span>
           <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required />
         </div>
       </div>
 
       <div class="login-row-between">
-        <label class="remember"><input type="checkbox" id="remember" /> Remember me</label>
+        <label class="remember"><input type="checkbox" id="remember" />Remember me</label>
       </div>
 
       <button type="submit" class="btn-primary" id="loginBtn">
@@ -66,6 +59,12 @@
 </div>
 
 <script>
+
+(function() {
+  const savedTheme = localStorage.getItem('biyahe-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+})();
+
 function handleLogin(event) {
   event.preventDefault();
 

@@ -6,33 +6,8 @@
   <title>BIYAHE — Sign Up</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      margin: 0;
-    }
-    /* No nav bar on this page, so the shell can use the full viewport height */
-    .center-shell {
-      min-height: 100vh;
-    }
-    .input-wrap.has-toggle input {
-      padding-right: 4px;
-    }
-    .pw-toggle {
-      background: none;
-      border: none;
-      padding: 0 14px 0 6px;
-      color: var(--text-muted);
-      font-size: 14px;
-      cursor: pointer;
-      line-height: 1;
-    }
-    .pw-toggle:hover {
-      color: var(--text-secondary);
-    }
-  </style>
+  <link rel="stylesheet" href="base.css"/>
+  <link rel="stylesheet" href="auth.css"/>
 </head>
 <body>
 
@@ -104,6 +79,11 @@
 </div>
 
 <script>
+(function() {
+  const savedTheme = localStorage.getItem('biyahe-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+})();
+
 function togglePassword(fieldId, btn) {
   const input = document.getElementById(fieldId);
   const isHidden = input.type === 'password';

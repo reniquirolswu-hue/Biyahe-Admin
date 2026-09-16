@@ -1,0 +1,339 @@
+/* ============================================================
+   BIYAHE — App Shell (Light Mode Conversion)
+   The logged-in admin chrome: sidebar, topbar, content wrapper,
+   and stat cards shared by Dashboard + Analytics.
+   Load base.css BEFORE this file.
+   ============================================================ */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--brown-200);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 20px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--brown-200);
+}
+
+.brand-mark-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--brown-100);
+  color: var(--brown-600);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.brand-name-sm {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brown-600);
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: block;
+}
+
+.side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+  cursor: pointer;
+}
+
+.side-link:hover {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
+
+.side-link.is-active {
+  background: var(--brown-100);
+  color: var(--brown-600);
+  font-weight: 600;
+}
+
+.side-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+}
+
+.side-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-top: 1px solid var(--brown-200);
+  margin-top: 10px;
+  padding-top: 16px;
+  transition: color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.side-logout:hover {
+  color: var(--brown-600);
+  transform: translateX(4px);
+}
+
+/* ---------- Main Area ---------- */
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Top Bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 28px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--brown-200);
+  flex-wrap: wrap;
+}
+
+.topbar-welcome {
+  font-size: 14px;
+}
+
+.topbar-welcome .lead {
+  color: var(--text-muted);
+  font-size: 12px;
+  display: block;
+}
+
+.topbar-welcome strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.region-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--brown-600);
+  background: var(--brown-100);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Replaces search flex spacer: pushes notification icon & admin chip to the far right */
+.icon-btn {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--brown-200);
+  background: var(--bg-body);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: var(--brown-300);
+  background: var(--bg-soft);
+  transform: scale(1.05);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
+}
+
+.admin-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.admin-chip:hover {
+  transform: scale(1.02);
+}
+
+.admin-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.admin-role {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--brown-600);
+  background: var(--brown-100);
+  padding: 1px 8px;
+  border-radius: 4px;
+  text-align: center;
+  margin-top: 1px;
+}
+
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--brown-100);
+  color: var(--brown-600);
+  font-size: 16px;
+  border: 2px solid var(--brown-200);
+}
+
+/* ---------- Content Area ---------- */
+.dash-content {
+  padding: 24px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- Stat Cards (Dashboard + Analytics Original Structure Preserved) ---------- */
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--brown-200);
+  border-left: 4px solid var(--brown-400); /* Original left accent border retained */
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.stat-note {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 860px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--brown-200);
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    position: static;
+    height: auto;
+    overflow-y: visible;
+    gap: 8px;
+  }
+
+  .sidebar-brand {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .side-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: none;
+  }
+
+  .side-logout {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    padding: 12px 16px;
+  }
+
+  .dash-content {
+    padding: 16px;
+  }
+}

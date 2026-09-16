@@ -35,6 +35,11 @@ if ($method === 'PUT') {
     exit();
 }
 
+if ($method === 'DELETE') {
+    handleDelete($conn);
+    exit();
+}
+
 http_response_code(405);
 echo json_encode(['success' => false, 'message' => 'Method not allowed.']);
 exit();
@@ -248,44 +253,71 @@ function handleUpdate($conn) {
 
         $updateStmt = $conn->prepare(
             'UPDATE routes
-             SET route_code = :route_code,
-                 vehicle_type = :vehicle_type,
-                 origin_terminal_id = :origin_id,
+             SET origin_terminal_id = :origin_id,
                  destination_terminal_id = :dest_id,
+                 route_code = :route_code,
+                 vehicle_type = :vehicle_type,
                  is_active = :is_active
-             WHERE route_id = :id
-             RETURNING route_id'
+             WHERE route_id = :route_id'
         );
         $updateStmt->execute([
-            ':route_code'   => $routeCode,
-            ':vehicle_type' => $vehicleType,
             ':origin_id'    => $originId,
             ':dest_id'      => $destId,
+            ':route_code'   => $routeCode,
+            ':vehicle_type' => $vehicleType,
             ':is_active'    => $isActive ? 'true' : 'false',
-            ':id'           => $routeId,
+            ':route_id'     => $routeId,
         ]);
 
-        if (!$updateStmt->fetchColumn()) {
-            $conn->rollBack();
-            http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Route not found.']);
-            return;
-        }
-
-        $deleteStmt = $conn->prepare('DELETE FROM waypoints WHERE route_id = :id');
-        $deleteStmt->execute([':id' => $routeId]);
+        $delWpStmt = $conn->prepare('DELETE FROM waypoints WHERE route_id = :route_id');
+        $delWpStmt->execute([':route_id' => $routeId]);
 
         insertWaypoints($conn, $routeId, $waypoints);
 
         $conn->commit();
 
-        http_response_code(200);
-        echo json_encode(['success' => true, 'route_id' => (int) $routeId]);
+        echo json_encode(['success' => true, 'route_id' => $routeId]);
     } catch (PDOException $e) {
         if ($conn->inTransaction()) {
             $conn->rollBack();
         }
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => 'Failed to update route.']);
+    }
+}
+
+function handleDelete($conn) {
+    $routeId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+    if (!$routeId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Valid route id is required (?id=).']);
+        return;
+    }
+
+    try {
+        $conn->beginTransaction();
+
+        // 1. Delete associated waypoints first
+        $delWpStmt = $conn->prepare('DELETE FROM waypoints WHERE route_id = :route_id');
+        $delWpStmt->execute([':route_id' => $routeId]);
+
+        // 2. Delete the parent route record
+        $delRouteStmt = $conn->prepare('DELETE FROM routes WHERE route_id = :route_id');
+        $delRouteStmt->execute([':route_id' => $routeId]);
+
+        $conn->commit();
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Route and its waypoints were successfully deleted.',
+            'deleted_route_id' => $routeId
+        ]);
+    } catch (PDOException $e) {
+        if ($conn->inTransaction()) {
+            $conn->rollBack();
+        }
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to delete route and its waypoints.']);
     }
 }
