@@ -1,0 +1,320 @@
+/* ============================================================
+   BIYAHE — Analytics Page (Dark & Orange Theme)
+   Load base.css and app-shell.css BEFORE this file.
+   ============================================================ */
+
+/* Lock the main dashboard content container to screen height */
+.dash-content {
+  height: calc(100vh - 70px); /* Adjust to match topbar height */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevents whole screen scrolling */
+  padding-bottom: 20px;
+  box-sizing: border-box;
+}
+
+/* Prevent upper cards/sections from collapsing */
+.stat-row,
+.analytics-split {
+  flex-shrink: 0;
+}
+
+.analytics-split {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: stretch; /* Ensures both cards match exact height */
+}
+
+/* Ensure panels inside split stretch fully */
+.analytics-split .panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Increased Height for Custom Native Bar Chart */
+.chart-panel-body {
+  padding: 16px 0 0 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.bar-chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  height: 250px;
+  padding-top: 20px;
+  border-bottom: 1px solid var(--brown-200);
+}
+
+.bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.bar-stack {
+  width: 100%;
+  max-width: 28px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100%;
+}
+
+.bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease;
+  min-height: 4px;
+}
+
+.bar.signups {
+  background: var(--brown-500);
+  box-shadow: 0 0 8px var(--brown-100);
+}
+
+.bar.saved {
+  background: #f5cb3f;
+}
+
+.bar-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* User Distribution SVG Pie / Donut Chart Panel */
+.pie-chart-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.pie-chart-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.pie-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  border-radius: 50%;
+}
+
+.pie-segment {
+  fill: none;
+  stroke-width: 24;
+  transition: stroke-dasharray 0.5s ease;
+}
+
+.pie-segment.commuters {
+  stroke: var(--brown-500);
+}
+
+.pie-segment.admins {
+  stroke: #f5cb3f;
+}
+
+.pie-segment.drivers {
+  stroke: var(--brown-300);
+}
+
+.pie-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.pie-center-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.pie-center-text {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Pie Chart Legend List */
+.pie-legend-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.pie-legend-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pie-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.pie-legend-dot.commuters {
+  background: var(--brown-500);
+}
+
+.pie-legend-dot.admins {
+  background: #f5cb3f;
+}
+
+.pie-legend-dot.drivers {
+  background: var(--brown-300);
+}
+
+.pie-legend-label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.pie-legend-val {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Bottom Route Codes Panel: Fills remaining vertical space */
+.dash-content > .panel:last-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Necessary for flexbox children to scroll properly */
+  margin-top: 20px;
+}
+
+/* Scrollable Container for Table */
+/* Scrollable Container for Table */
+.route-table-wrapper {
+  flex: 1;
+  overflow-y: auto; /* Enables vertical scroll bar ONLY inside the table area */
+  overflow-x: auto;
+  margin-top: 16px;
+  padding-right: 12px; /* Adds space between table content and the scrollbar */
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* Sticky Header so column titles remain pinned while scrolling */
+.analytics-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-panel, #121214);
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--brown-200);
+  z-index: 2;
+}
+
+.analytics-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--brown-200);
+  color: var(--text-primary);
+}
+
+.route-code-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  background: var(--brown-100);
+  border: 1px solid var(--brown-200);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  color: var(--brown-500);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  color: var(--brown-500);
+}
+
+.status-badge.inactive {
+  color: var(--text-muted);
+}
+
+.status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .analytics-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Scrollbar styling specifically for scrollable cards and tables */
+.route-table-wrapper::-webkit-scrollbar,
+.dash-content::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.route-table-wrapper::-webkit-scrollbar-track,
+.dash-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+.route-table-wrapper::-webkit-scrollbar-thumb,
+.dash-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+}
+
+.route-table-wrapper::-webkit-scrollbar-thumb:hover,
+.dash-content::-webkit-scrollbar-thumb:hover {
+  background: #ff6b00;
+}

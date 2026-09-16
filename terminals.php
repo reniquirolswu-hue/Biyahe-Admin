@@ -96,5 +96,111 @@ if ($method === 'POST') {
     exit();
 }
 
+if ($method === 'PUT') {
+    $terminalId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+    if (!$terminalId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Valid terminal id is required (?id=).']);
+        exit();
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+    $rawName   = $input['terminal_name'] ?? '';
+    $name      = function_exists('sanitize_string') ? sanitize_string((string)$rawName) : trim((string)$rawName);
+
+    $latitude  = filter_var($input['latitude'] ?? null, FILTER_VALIDATE_FLOAT);
+    $longitude = filter_var($input['longitude'] ?? null, FILTER_VALIDATE_FLOAT);
+
+    if ($name === '' || $latitude === false || $longitude === false) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Valid terminal_name, latitude, and longitude are required.']);
+        exit();
+    }
+
+    if ($latitude < -90.0 || $latitude > 90.0 || $longitude < -180.0 || $longitude > 180.0) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Latitude must be between -90 and 90, and Longitude between -180 and 180.']);
+        exit();
+    }
+
+    try {
+        $stmt = $conn->prepare(
+            'UPDATE terminals
+             SET terminal_name = :name, latitude = :lat, longitude = :lng
+             WHERE terminal_id = :id
+             RETURNING terminal_id, terminal_name, latitude, longitude'
+        );
+        $stmt->execute([
+            ':name' => $name,
+            ':lat'  => (float) $latitude,
+            ':lng'  => (float) $longitude,
+            ':id'   => $terminalId,
+        ]);
+
+        $terminal = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$terminal) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Terminal not found.']);
+            exit();
+        }
+
+        $terminal['terminal_id']   = (int) $terminal['terminal_id'];
+        $terminal['terminal_name'] = htmlspecialchars((string)$terminal['terminal_name'], ENT_QUOTES, 'UTF-8');
+        $terminal['latitude']      = (float) $terminal['latitude'];
+        $terminal['longitude']     = (float) $terminal['longitude'];
+
+        echo json_encode(['success' => true] + $terminal);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to update terminal.']);
+    }
+    exit();
+}
+
+if ($method === 'DELETE') {
+    $terminalId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+    if (!$terminalId) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Valid terminal id is required (?id=).']);
+        exit();
+    }
+
+    try {
+        $stmt = $conn->prepare('DELETE FROM terminals WHERE terminal_id = :id');
+        $stmt->execute([':id' => $terminalId]);
+
+        if ($stmt->rowCount() === 0) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Terminal not found.']);
+            exit();
+        }
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Terminal deleted.',
+            'deleted_terminal_id' => $terminalId
+        ]);
+    } catch (PDOException $e) {
+        // SQLSTATE 23503 = foreign_key_violation (Postgres) — this terminal is
+        // still referenced by one or more routes' origin/destination.
+        if ($e->getCode() === '23503') {
+            http_response_code(409);
+            echo json_encode([
+                'success' => false,
+                'message' => 'This terminal is used as an origin or destination on one or more routes. Update or delete those routes first.'
+            ]);
+            exit();
+        }
+
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Failed to delete terminal.']);
+    }
+    exit();
+}
+
 http_response_code(405);
 echo json_encode(['success' => false, 'message' => 'Method not allowed.']);

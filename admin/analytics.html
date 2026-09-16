@@ -6,7 +6,8 @@
   <title>BIYAHE — Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="base.css" />
+  <link rel="stylesheet" href="app_shell.css" />
   <link rel="stylesheet" href="analytics.css" />
 </head>
 <body>
@@ -14,7 +15,6 @@
 <div class="app-shell">
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-mark-sm">🚌</div>
       <div>
         <p class="brand-name-sm">BIYAHE</p>
         <span class="brand-sub">Transit Management</span>
@@ -24,6 +24,7 @@
       <a href="dashboard.html" class="side-link"><span class="side-icon"></span>Dashboard</a>
       <a href="analytics.html" class="side-link is-active"><span class="side-icon"></span>Analytics</a>
       <a href="routes.html" class="side-link"><span class="side-icon"></span>Routes</a>
+      <a href="terminals.html" class="side-link"><span class="side-icon"></span>Terminals</a>
       <a href="settings.html" class="side-link"><span class="side-icon"></span>Settings</a>
     </nav>
     <a href="index.html" class="side-logout">← Logout</a>
@@ -37,9 +38,6 @@
       </div>
       <span class="region-badge">Biyahe Route System</span>
 
-      <div class="topbar-search">
-        <input type="text" id="routeCodeSearch" placeholder="Search route code or origin..." oninput="filterRouteCodesTable()" />
-      </div>
       <button class="icon-btn" onclick="loadAnalytics(true)">🔔</button>
       <a href="settings.html" class="admin-chip">
         <div>
@@ -64,9 +62,9 @@
           <p class="stat-note" id="stat-user-note">0 commuters · 0 admins</p>
         </div>
         <div class="stat-card fade-in delay-3">
-          <p class="stat-label">Total Saved Routes</p>
-          <p class="stat-value" id="stat-saved-routes">0</p>
-          <p class="stat-note">Commuter bookmarks</p>
+          <p class="stat-label">Total Terminals</p>
+          <p class="stat-value" id="stat-terminals">0</p>
+          <p class="stat-note">Registered transit hubs</p>
         </div>
         <div class="stat-card fade-in delay-4">
           <p class="stat-label">GIS Waypoints</p>
@@ -112,10 +110,10 @@
       </div>
 
       <!-- Route Codes Overview Panel -->
-      <div class="panel fade-in delay-4" style="margin-top: 20px;">
+      <div class="panel fade-in delay-4">
         <div class="panel-head">
           <div>
-            <h3>🛣️ Route Codes Overview</h3>
+            <h3> Route Codes Overview</h3>
             <p class="sub">Active corridors and registered jeepney codes in Metro Cebu</p>
           </div>
           <span class="tag-pill" id="table-routes-pill">0 Registered</span>
@@ -147,7 +145,11 @@
 <script>
 let cachedRoutes = [];
 
-// Fetch logged-in admin user information
+(function() {
+  const savedTheme = localStorage.getItem('biyahe-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+})();
+
 async function fetchAdminProfile() {
   try {
     const res = await fetch('../admin_profile.php', { credentials: 'include' });
@@ -224,12 +226,9 @@ async function fetchRouteCodes() {
 function renderStats(stats, userDist) {
   document.getElementById('stat-active-routes').textContent = stats.active_routes.toLocaleString();
   document.getElementById('stat-active-note').textContent = `${stats.active_route_pct}% active (${stats.inactive_routes} inactive)`;
-
   document.getElementById('stat-total-people').textContent = stats.total_people.toLocaleString();
   document.getElementById('stat-user-note').textContent = `${(userDist.commuters || 0).toLocaleString()} commuters · ${(userDist.admins || 0).toLocaleString()} admins`;
-
-  document.getElementById('stat-saved-routes').textContent = stats.total_saved_routes.toLocaleString();
-
+  document.getElementById('stat-terminals').textContent = stats.total_terminals.toLocaleString();
   document.getElementById('stat-waypoints').textContent = stats.total_waypoints.toLocaleString();
   document.getElementById('stat-gis-note').textContent = `${stats.total_terminals} terminals · ${stats.total_landmarks} landmarks`;
 }
@@ -247,7 +246,6 @@ function renderUserDistribution(userDist, totalUsers) {
   const admins = userDist.admins || 0;
   const drivers = userDist.drivers || 0;
 
-  // Circle perimeter for r=40 is 2 * PI * 40 = ~251.327
   const C = 251.327;
 
   const commuterPct = commuters / totalUsers;
@@ -258,26 +256,20 @@ function renderUserDistribution(userDist, totalUsers) {
   const adminDash = adminPct * C;
   const driverDash = driverPct * C;
 
-  const adminOffset = C - commuterDash;
-  const driverOffset = C - (commuterDash + adminDash);
-
   container.innerHTML = `
     <div class="pie-chart-body">
       <div class="pie-chart-wrapper">
         <svg class="pie-svg" viewBox="0 0 100 100">
           <circle cx="50" cy="50" r="40" stroke="var(--bg-soft)" stroke-width="24" fill="none" />
           
-          <!-- Commuters Segment -->
           <circle class="pie-segment commuters" cx="50" cy="50" r="40"
             stroke-dasharray="${commuterDash} ${C - commuterDash}"
             stroke-dashoffset="0" />
 
-          <!-- Admins Segment -->
           <circle class="pie-segment admins" cx="50" cy="50" r="40"
             stroke-dasharray="${adminDash} ${C - adminDash}"
             stroke-dashoffset="-${commuterDash}" />
 
-          <!-- Drivers Segment -->
           ${driverPct > 0 ? `
           <circle class="pie-segment drivers" cx="50" cy="50" r="40"
             stroke-dasharray="${driverDash} ${C - driverDash}"

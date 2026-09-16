@@ -1,0 +1,512 @@
+/* ============================================================
+   BIYAHE — Routes Page
+   Load base.css and app-shell.css BEFORE this file.
+   ============================================================ */
+
+.route-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.route-header h2 {
+  font-size: 22px;
+}
+
+.route-header .sub {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filter-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--brown-200);
+  background: var(--bg-panel);
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-input:focus-within {
+  border-color: var(--brown-400);
+  box-shadow: 0 0 0 4px rgba(139, 107, 79, 0.12);
+}
+
+.filter-input input,
+.filter-input select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  border: 0 !important;
+  border-style: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-body);
+  padding-right: 20px !important;
+  cursor: pointer;
+}
+
+/* Ensure focus outline on the inner select is completely killed */
+.filter-input select:focus,
+.filter-input select:active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--brown-200);
+  background: var(--bg-panel);
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.filter-chip:focus-within {
+  border-color: var(--brown-400);
+  box-shadow: 0 0 0 4px rgba(139, 107, 79, 0.12);
+}
+
+.filter-chip input,
+.filter-chip select {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  border: 0 !important;
+  border-style: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: var(--font-body);
+  padding-right: 20px !important;
+  cursor: pointer;
+
+  /* Custom Orange Arrow */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23ff7300' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right center !important;
+}
+
+/* Ensure focus outline on the inner select is completely killed */
+.filter-chip select:focus,
+.filter-chip select:active {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.filter-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--brown-500);
+  font-weight: 600;
+}
+
+.route-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.route-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--bg-panel);
+  border: 1px solid var(--brown-100);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.route-item:hover {
+  border-color: var(--brown-300);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(4px);
+}
+
+.route-code {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  color: var(--brown-500);
+  border: 1px solid var(--brown-200);
+  min-width: 56px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.route-code.solid {
+  background: var(--brown-500);
+  color: var(--white);
+  border-color: var(--brown-500);
+}
+
+.route-code.blue {
+  background: rgba(90, 160, 220, 0.14);
+  color: #7fb3e8;
+  border-color: rgba(90, 160, 220, 0.35);
+}
+
+.route-code.alt {
+  background: var(--brown-100);
+  color: var(--brown-600);
+  border-color: var(--brown-200);
+}
+
+.route-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.route-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.route-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.route-edit {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--brown-200);
+  background: var(--bg-body);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.route-edit:hover {
+  border-color: var(--brown-400);
+  color: var(--brown-600);
+  background: var(--bg-soft);
+  transform: scale(1.1);
+}
+
+.route-edit:active {
+  transform: scale(0.9);
+}
+
+.route-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--brown-100);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pager button,
+.pager .cur {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--brown-200);
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  cursor: pointer;
+}
+
+.pager button:hover {
+  border-color: var(--brown-400);
+  background: var(--bg-soft);
+  transform: scale(1.05);
+}
+
+.pager button:active {
+  transform: scale(0.95);
+}
+
+.pager .cur {
+  background: var(--brown-500);
+  color: var(--white);
+  border-color: var(--brown-500);
+  cursor: default;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .route-item {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .route-code {
+    min-width: 48px;
+    font-size: 12px;
+    padding: 4px 10px;
+  }
+
+  .route-name {
+    font-size: 13px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-count {
+    margin-left: 0;
+  }
+
+  .route-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+    /* Split-screen layout styles for Creator view */
+    .route-workspace {
+      display: none; /* Hidden by default until Add/Edit is clicked */
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      height: calc(100vh - 120px);
+      margin-top: 15px;
+    }
+
+    .form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding: 24px 22px;
+    background: var(--bg-panel);
+    border: 1px solid var(--brown-100);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    }
+
+    .form-card h3 {
+      color: var(--brown-700);
+      font-size: 17px;
+      margin: 0 0 4px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px 12px;
+      background: var(--bg-body);
+      border: 2px solid var(--brown-200);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      font-family: var(--font-body);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    /* Custom dropdown override for .form-group select */
+    .form-group select {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none; /* Removes OS default styling & default arrow */
+      padding-right: 36px; /* Spacing so text doesn't overlap the custom arrow */
+      cursor: pointer;
+      /* Custom Orange Chevron SVG Arrow */
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ff7300' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-light);
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: #ff7300;
+      box-shadow: 0 0 0 4px rgba(255, 115, 0, 0.15);
+    }
+
+    .form-group select option {
+      background: var(--bg-panel, #1e1e24);
+      color: var(--text-primary, #e2e8f0);
+      padding: 10px;
+    }
+
+    .map-container {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #cbd5e1;
+      min-height: 400px;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-instruction {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(18, 18, 20, 0.88); /* Deep dark background with subtle glass opacity */
+      color: #e2e8f0;                       /* Bright light-gray text */
+      padding: 10px 16px;
+      border-radius: var(--radius-sm, 8px);
+      font-size: 12px;
+      font-family: var(--font-body, inherit);
+      border: 1px solid rgba(255, 115, 0, 0.3); /* Subtle orange glowing accent border */
+      border-left: 4px solid #ff7300;           /* Vibrant orange indicator bar on the left */
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(8px);               /* Glassmorphism blur for map background */
+      z-index: 10;
+    }
+
+    .map-instruction b {
+      color: #ff8c1a; /* Vibrant orange for bold text highlight */
+      font-weight: 700;
+    }
+
+    .map-key-warning {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #f1f5f9;
+      z-index: 20;
+      padding: 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .btn-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 2px solid var(--brown-200);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+      font-family: var(--font-body);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--brown-400);
+      background: var(--bg-soft);
+    }
+
+    /* Breathing room between the search/filter bar and the route list below it */
+    .route-list {
+      margin-top: 20px;
+    }
+    
+    /* Styled identically to .route-edit */
+    .route-delete-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--brown-200);
+      background: var(--bg-body);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.2s;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .route-delete-btn:hover {
+      border-color: #dc3545;
+      color: #dc3545;
+      background: rgba(220, 53, 69, 0.1);
+      transform: scale(1.1);
+    }
+
+    .route-delete-btn:active {
+      transform: scale(0.9);
+    }
+
+    .btn-danger {
+    background: rgba(211, 47, 47, 0.12);
+    color: #e57373;
+    border: 2px solid rgba(211, 47, 47, 0.35);
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    font-family: var(--font-body);
+    font-size: 13px;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    .btn-danger:hover {
+    background: rgba(211, 47, 47, 0.2);
+    border-color: rgba(211, 47, 47, 0.5);
+    transform: translateY(-2px);
+    }
