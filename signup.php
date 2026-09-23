@@ -1,6 +1,19 @@
 <?php
-// signup.php
+// Set JSON response header at the very top
+header('Content-Type: application/json; charset=utf-8');
+
+// Disable HTML error displays so PHP warnings/errors don't corrupt the JSON response
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+
 require_once 'config.php';
+
+// Helper sanitizer function if not already defined in config.php
+if (!function_exists('sanitize_string')) {
+    function sanitize_string($input) {
+        return htmlspecialchars(strip_tags(trim($input ?? '')), ENT_QUOTES, 'UTF-8');
+    }
+}
 
 $data = json_decode(file_get_contents("php://input"), true) ?? [];
 
@@ -9,7 +22,7 @@ $email           = filter_var(trim($data['email'] ?? ''), FILTER_SANITIZE_EMAIL)
 $password        = $data['password'] ?? '';
 $confirmPassword = $data['confirmPassword'] ?? '';
 
-// Validation
+// Validation checks
 if (empty($username) || empty($password) || empty($confirmPassword) || empty($email)) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "All fields are required."]);
@@ -66,5 +79,9 @@ try {
 
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Server error while creating account."]);
+    echo json_encode([
+        "success" => false, 
+        "message" => "Database error occurred."
+    ]);
 }
+?>

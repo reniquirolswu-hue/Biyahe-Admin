@@ -37,6 +37,7 @@
         <div class="input-wrap">
           <span class="icon"></span>
           <input type="password" id="password" name="password" placeholder="Enter password" autocomplete="current-password" required />
+          <button type="button" class="pw-toggle" onclick="togglePassword('password', this)">👁️</button>
         </div>
       </div>
 
@@ -54,7 +55,7 @@
   </div>
 
   <div class="trust-strip">
-    <span class="trust-line">🔒 Authorized Personnel Only</span>
+    <span class="trust-line"> Authorized Personnel Only</span>
   </div>
 </div>
 
@@ -64,6 +65,13 @@
   const savedTheme = localStorage.getItem('biyahe-theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
 })();
+
+function togglePassword(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? '🙈' : '👁️';
+}
 
 function handleLogin(event) {
   event.preventDefault();

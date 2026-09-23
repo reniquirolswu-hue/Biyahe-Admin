@@ -1,6 +1,16 @@
 <?php
 // admin/api/routes.php
-ob_start(); // Prevent PHP warnings/notices from ruining JSON output
+ob_start();
+
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cookie");
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 require_once __DIR__ . '/config.php';
 
@@ -8,13 +18,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Clear any output buffer accumulated during require_once or session_start
 ob_clean();
 header('Content-Type: application/json; charset=utf-8');
 
+// Strictly require Admin Authentication
 if (empty($_SESSION['admin_id'])) {
     http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Not logged in.']);
+    echo json_encode(['success' => false, 'message' => 'Admin authentication required.']);
     exit();
 }
 
@@ -61,7 +71,7 @@ function handleGet($conn) {
                  WHERE r.route_id = :id'
             );
             $stmt->execute([':id' => $id]);
-            $route = $stmt->fetch();
+            $route = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$route) {
                 http_response_code(404);
@@ -76,7 +86,7 @@ function handleGet($conn) {
                  ORDER BY sequence_no ASC'
             );
             $wpStmt->execute([':id' => $id]);
-            $waypoints = $wpStmt->fetchAll();
+            $waypoints = $wpStmt->fetchAll(PDO::FETCH_ASSOC);
 
             $route['route_id']                = (int) $route['route_id'];
             $route['route_code']             = htmlspecialchars((string)($route['route_code'] ?? ''), ENT_QUOTES, 'UTF-8');
@@ -104,7 +114,7 @@ function handleGet($conn) {
              JOIN terminals dt ON dt.terminal_id = r.destination_terminal_id
              ORDER BY r.route_code ASC'
         );
-        $routes = $stmt->fetchAll() ?: [];
+        $routes = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         $cleanedRoutes = [];
         foreach ($routes as $r) {
@@ -298,11 +308,9 @@ function handleDelete($conn) {
     try {
         $conn->beginTransaction();
 
-        // 1. Delete associated waypoints first
         $delWpStmt = $conn->prepare('DELETE FROM waypoints WHERE route_id = :route_id');
         $delWpStmt->execute([':route_id' => $routeId]);
 
-        // 2. Delete the parent route record
         $delRouteStmt = $conn->prepare('DELETE FROM routes WHERE route_id = :route_id');
         $delRouteStmt->execute([':route_id' => $routeId]);
 
@@ -321,3 +329,4 @@ function handleDelete($conn) {
         echo json_encode(['success' => false, 'message' => 'Failed to delete route and its waypoints.']);
     }
 }
+?>
