@@ -9,12 +9,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+$data = json_decode(file_get_contents("php://input"), true) ?? [];
 
-$username = trim($data['username'] ?? '');
-$password = trim($data['password'] ?? '');
+$username = sanitize_string($data['username'] ?? '');
+$password = $data['password'] ?? '';
 
 if (empty($username) || empty($password)) {
+    http_response_code(400);
     echo json_encode(["success" => false, "message" => "Username and password are required."]);
     exit();
 }
@@ -29,8 +30,8 @@ try {
     $admin = $stmt->fetch();
 
     if (!$admin || !password_verify($password, $admin['admin_password'])) {
-        // slight delay helps mitigate brute-force / username enumeration via timing
-        usleep(300000);
+        usleep(300000); // Slight delay helps mitigate brute-force
+        http_response_code(401);
         echo json_encode(["success" => false, "message" => "Invalid username or password."]);
         exit();
     }
@@ -47,7 +48,7 @@ try {
         "success" => true,
         "message" => "Login successful.",
         "admin"   => [
-            "admin_id"   => $admin['admin_id'],
+            "admin_id"   => (int) $admin['admin_id'],
             "admin_uuid" => $admin['admin_uuid'],
             "username"   => $admin['admin_username'],
             "email"      => $admin['admin_email']

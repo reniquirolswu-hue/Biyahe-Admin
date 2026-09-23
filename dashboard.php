@@ -1,13 +1,5 @@
 <?php
-// dashboard.php (project root, alongside routes.php, terminals.php, config.php)
-//
-// Powers admin/dashboard.html: core stats, top terminal "hubs", and GeoJSON
-// for terminal/landmark map pins. Route lines are intentionally NOT
-// included here (not needed on the dashboard map).
-//
-// Table names are PLURAL: users, admins, terminals, routes, saved_routes,
-// landmarks, route_landmarks, waypoints
-
+// dashboard.php
 session_start();
 require_once __DIR__ . '/config.php';
 
@@ -24,9 +16,7 @@ if (empty($_SESSION['admin_id'])) {
 }
 
 try {
-    // ---------------------------------------------------------------
     // Core stats
-    // ---------------------------------------------------------------
     $totalUsers     = (int) $conn->query('SELECT COUNT(*) FROM users')->fetchColumn();
     $totalAdmins    = (int) $conn->query('SELECT COUNT(*) FROM admins')->fetchColumn();
     $totalTerminals = (int) $conn->query('SELECT COUNT(*) FROM terminals')->fetchColumn();
@@ -35,7 +25,7 @@ try {
     $routeStmt = $conn->query('SELECT is_active, COUNT(*) AS cnt FROM routes GROUP BY is_active');
     $activeRoutes = 0;
     $inactiveRoutes = 0;
-    foreach ($routeStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    foreach ($routeStmt->fetchAll() as $row) {
         if ($row['is_active']) {
             $activeRoutes = (int) $row['cnt'];
         } else {
@@ -44,13 +34,7 @@ try {
     }
     $totalRoutes = $activeRoutes + $inactiveRoutes;
 
-    // NOTE: "Fleet Health" and "Active PUJs" have no backing table in the
-    // current schema (no vehicles/telemetry table), so they are omitted
-    // here on purpose rather than faked. The frontend shows "N/A" for them.
-
-    // ---------------------------------------------------------------
-    // Top terminal "hubs" by number of routes touching them
-    // ---------------------------------------------------------------
+    // Top terminal hubs
     $hubStmt = $conn->query("
         SELECT t.terminal_id,
                t.terminal_name,
@@ -66,17 +50,15 @@ try {
     $hubs = array_map(function ($row) {
         return [
             "terminal_id" => (int) $row['terminal_id'],
-            "name"        => $row['terminal_name'],
+            "name"        => htmlspecialchars($row['terminal_name'], ENT_QUOTES, 'UTF-8'),
             "route_count" => (int) $row['route_count'],
         ];
-    }, $hubStmt->fetchAll(PDO::FETCH_ASSOC));
+    }, $hubStmt->fetchAll());
 
-    // ---------------------------------------------------------------
-    // GeoJSON: terminals (points) for map pins
-    // ---------------------------------------------------------------
+    // GeoJSON: terminals
     $terminalStmt = $conn->query('SELECT terminal_id, terminal_name, latitude, longitude FROM terminals');
     $terminalFeatures = [];
-    foreach ($terminalStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    foreach ($terminalStmt->fetchAll() as $row) {
         if ($row['latitude'] === null || $row['longitude'] === null) {
             continue;
         }
@@ -88,17 +70,15 @@ try {
             ],
             "properties" => [
                 "id"   => (int) $row['terminal_id'],
-                "name" => $row['terminal_name'],
+                "name" => htmlspecialchars($row['terminal_name'], ENT_QUOTES, 'UTF-8'),
             ]
         ];
     }
 
-    // ---------------------------------------------------------------
-    // GeoJSON: landmarks (points) for map pins
-    // ---------------------------------------------------------------
+    // GeoJSON: landmarks
     $landmarkStmt = $conn->query('SELECT landmark_id, landmark_name, latitude, longitude FROM landmarks');
     $landmarkFeatures = [];
-    foreach ($landmarkStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    foreach ($landmarkStmt->fetchAll() as $row) {
         if ($row['latitude'] === null || $row['longitude'] === null) {
             continue;
         }
@@ -110,7 +90,7 @@ try {
             ],
             "properties" => [
                 "id"   => (int) $row['landmark_id'],
-                "name" => $row['landmark_name'],
+                "name" => htmlspecialchars($row['landmark_name'], ENT_QUOTES, 'UTF-8'),
             ]
         ];
     }
